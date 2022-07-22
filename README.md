@@ -27,6 +27,8 @@ Thx, *D. Garmon*
 
 7/2022
 
+![tinaV1 pic](resource/olvgui_multi.png)
+
 **oLv includes these GUI elements:**
 
 * Button
