@@ -52,6 +52,19 @@ The OSC modules include:
 * OSC packet data encoding and decoding
 * a LÖVE-only threaded OSC server that can run concurrently with the main thread.
 
+## oLv Demos
+
+oLv demo programs, both source and .love files are in these directories in the repository.
+
+  * demo_love
+  * demo_src
+
+Follow this link for simple [oLv Demo Documentation](oLvDemos.md). The demo **tinaV1** has [separate docs](demo_love/demo_docs/tinaV1.md), as it depends on Pure Data and a JACK-enabled softsynth.
+
+Any .love files will run under 'LÖVE for Android' app in the Play store. After downloading, they should be launch-able from the Google *Files* app.
+
+**The demo source files are the best documentation, currently...although the info presented below is a start.**
+
 # GUI Elements
 
 Standard definitions for this section:

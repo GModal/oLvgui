@@ -131,6 +131,15 @@ function doDroplist(index, text, user)
       elseif index == 2 then
         packet = oLvosc.oscPacket('/toggle_punch_out')
         oLvosc.sendOSC(cudp, packet)
+      elseif index == 4 then
+        if tPortLabel.active == 0 then
+          tPortLabel.active = 1
+          menudl.items[4] = '» Show Bar/Beat'
+        else
+          tPortLabel.active = 0
+          menudl.items[4] = 'Show Bar/Beat'
+        end
+        
       end
   end
 end
@@ -265,6 +274,7 @@ function love.load()
   menudl = oLvgui.createDroplist(gui, 'Settings', {'Punch In', 'Punch Out', '\t\t- - -', 'Show Bar/Beat', '\t\t- - -', 'Quit'},{'MENU'}, 750, 40, 180, 25, 'menu')
   
   tPortLabel = oLvgui.createLabel(gui, "001|01|0000", {}, 320, 60, 32)  
+  tPortLabel.active = 0
 end
 
 function love.update(dt)
