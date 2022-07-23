@@ -33,19 +33,19 @@ Info about oLv Demos
 
 ## hello1
 
-### Simple demo
+*Simple demo*
 
 ## hello2
 
-### Another simple demo
+*Another simple demo*
 
 ## hellomin
 
-### A very minimal demo, maybe the most basic.
+*A very minimal demo, maybe the most basic.*
 
 ## oscCaster
 
-### Sends OSC data on address, port
+### Sends OSC test data to address, port
 
   * Defaults set, but can be changed
   * Click on 'Send OSC Msgs' to open the port, begin send
@@ -54,7 +54,7 @@ Info about oLv Demos
 
 ## oscMonV1
 
-### monitors OSC messages on address, port
+### Monitors OSC messages on address, port
 
   * Defaults set, but can be changed
   * Click on 'OSC Server' to open the port, begin capture
@@ -74,6 +74,8 @@ Info about oLv Demos
 ## tinaV1
 
 ### tina is a tiny concertina-like instrument
+
+Like a concertina, *tina* is a two-handed performance instrument.
 
 *tina* sends OSC data to a Pure Data script, which converts it to MIDI data -> which is routed to the softsynth of your choice.
 

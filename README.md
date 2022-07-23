@@ -5,7 +5,7 @@
 
 ...which means 'Homage to Love.' Pronounce it 'Oh-Love'...or basically 'Olive'
 
-*oLv* was written to create easily configurable GUIs for OSC (Open Sound Control) communications between musical effects and synthesizers. Specifically I wrote it to make GUIs for *pd2jack* in realtime.
+*oLv* was written to create easily configurable GUIs for OSC (Open Sound Control) communications between musical effects and synthesizers. Specifically I wrote it to make GUIs for [pd2jack](https://github.com/GModal/pd2jack) in realtime.
 
 *oLv* uses/depends on the **LÖVE** 2d game engine, which is flexible, Lua-driven, cross-platform (Mobile! Linux! Etc!) and very easy to use. *oLvgui* can automatically resize it's interface for mobile devices. It's currently only tested with Linux and Android, however.
 
@@ -15,7 +15,7 @@ The **oLv** modules include:
   * oLvcolor : color definitions and functions
   * oLvext : extras, currently polygon definitions for the GUI
 
-## Open Sound Control
+### Open Sound Control
 ### olvosc (pure Lua) & olvoscT (LÖVE)
 
 *oLv* includes the *olvosc* module, a 'pure Lua' library for sending/receiving OSC packets via UDP. There's also a LÖVE-specific module, *oLvoscT* which is a threaded OSC server
