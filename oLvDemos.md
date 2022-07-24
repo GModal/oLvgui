@@ -3,9 +3,11 @@
 
 Info about oLv Demos
 
+Projects with (OSC) utilize the **oLvosc** (and some **oLvoscT**) modules
+
 ## ardourV1
 
-### OSC controller for Ardour DAW
+### OSC controller for Ardour DAW (OSC)
 
   * Sends OSC data on port 3819 (Ardour standard port)
   * Receives OSC data on port 8000
@@ -21,6 +23,9 @@ Info about oLv Demos
             * Master Sections
             * Play Head Position as Bar and Beat
 
+  * Uses the **oLvoscT** threaded server
+
+The 'Query' button should be pressed after starting (assuming Ardour is running). It will load the current tracks, and set Ardour to send it's data.
 
 ## demoV1
 
@@ -45,7 +50,7 @@ Info about oLv Demos
 
 ## oscCaster
 
-### Sends OSC test data to address, port
+### Sends OSC test data to address, port (OSC)
 
   * Defaults set, but can be changed
   * Click on 'Send OSC Msgs' to open the port, begin send
@@ -54,12 +59,13 @@ Info about oLv Demos
 
 ## oscMonV1
 
-### Monitors OSC messages on address, port
+### Monitors OSC messages on address, port (OSC)
 
   * Defaults set, but can be changed
   * Click on 'OSC Server' to open the port, begin capture
   * Deselecting closes the port
-  * Uses 'oLvoscT', the threaded server
+
+Uses 'oLvoscT', the threaded OSC server (LÖVE only) which is much more reliable for receiving OSC data packets.
 
 ## themesV1
 
@@ -73,10 +79,13 @@ Info about oLv Demos
 
 ## tinaV1
 
-### tina is a tiny concertina-like instrument
+### tina is a tiny concertina-like instrument (OSC)
 
 Like a concertina, *tina* is a two-handed performance instrument.
 
-*tina* sends OSC data to a Pure Data script, which converts it to MIDI data -> which is routed to the softsynth of your choice.
+*tina* sends OSC data to a **Pure Data** script, which converts it to MIDI data -> which is routed to the softsynth of your choice.
 
 *tina* has it's own documention...
+
+  * *tina* is the most definitive demonstration of the **panel** element, and it's interactive capabilities
+  * As noted, it uses **Pure Data** to convert the OSC data to a MIDI stream (and lessen the OSC network load)

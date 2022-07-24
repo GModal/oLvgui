@@ -1,13 +1,16 @@
 # oLv 
 ## LÖVE GUI & OSC library modules
 
-### oLv is 'omaggio LÖVE'
+**oLv** is 'omaggio LÖVE'...which means 'Homage to Love'..maybe. Or maybe 'open LÖVE' (I needed an acronym).  
 
-...which means 'Homage to Love.' Pronounce it 'Oh-Love'...or basically 'Olive'
+Pronounce it 'Oh-Love'...or basically 'Olive'
 
 *oLv* was written to create easily configurable GUIs for OSC (Open Sound Control) communications between musical effects and synthesizers. Specifically I wrote it to make GUIs for [pd2jack](https://github.com/GModal/pd2jack) in realtime.
 
 *oLv* uses/depends on the **LÖVE** 2d game engine, which is flexible, Lua-driven, cross-platform (Mobile! Linux! Etc!) and very easy to use. *oLvgui* can automatically resize it's interface for mobile devices. It's currently only tested with Linux and Android, however.
+
+  * *oLvgui* was developed in LÖVE V11.3
+  * *oLvosc* was developed in LÖVE V11.3 and tested on Lua V5.3
 
 The **oLv** modules include:
 
@@ -16,12 +19,14 @@ The **oLv** modules include:
   * oLvext : extras, currently polygon definitions for the GUI
 
 ### Open Sound Control
-### olvosc (pure Lua) & olvoscT (LÖVE)
+### oLvosc (pure Lua) & oLvoscT (LÖVE)
 
 *oLv* includes the *olvosc* module, a 'pure Lua' library for sending/receiving OSC packets via UDP. There's also a LÖVE-specific module, *oLvoscT* which is a threaded OSC server
 
-  * olvosc link
-  * olvoscT link
+  * oLvosc
+  * oLvoscT
+
+**oLvosc** modules are included in the **oLvgui** repositories, but have their own repository.
 
 Thx, *D. Garmon*
 
@@ -59,7 +64,7 @@ oLv demo programs, both source and .love files are in these directories in the r
   * demo_love
   * demo_src
 
-Follow this link for simple [oLv Demo Documentation](oLvDemos.md). The demo **tinaV1** has [separate docs](demo_love/demo_docs/tinaV1.md), as it depends on Pure Data and a JACK-enabled softsynth.
+Follow this link for simple [oLv Demo Documentation](oLvDemos.md). The demo **tinaV1** has [separate docs](demo_love/demo_docs/tinaV1.md), as it depends on **Pure Data** and a JACK-enabled softsynth.
 
 Any .love files will run under 'LÖVE for Android' app in the Play store. After downloading, they should be launch-able from the Google *Files* app.
 
@@ -81,7 +86,7 @@ Standard definitions for this section:
 * min, max : value limits, min may be negative
 * color : color setting, explicit for labels and panels
 * presetTx : initial text value
-* user : an identifier, but the field can be single variable (anything) or a table of anything
+* user : an identifier, but the field can be anything
 * callback : is a custom callback function (use same args as the standard callback)
 
 ### Passing Options
@@ -215,6 +220,8 @@ See **Add a close callback** section below.
 * "oLvosc"   contains the standard OSC library, client & server
 * "oLvoscT"  contains the threaded OSC server
 
+The standard path for the modules is in the **/oLv** directory within the project dir.
+
 # Using the *oLvgui* module
 
 All the gui functions are accessed with the prefix: **oLvgui**
@@ -287,6 +294,8 @@ Minimally, this should also work:
 ## oLv and GUI scaling
 
 **All** the GUI elements in *oLvgui* are scaled, but the default scaling is 1:1. The autoScale() function (for mobile devices) simply creates scale factors to fit the defined elements into the mobile viewport.
+
+Auto scaling is currently only tested with Android devices. iOS users can try manually setting the scaling factors.
 
 A sample workflow for creating a new interface (on a desktop or laptop):
 
@@ -386,44 +395,44 @@ Place these two callbacks in the standard LÖVE callbacks (see section [Updating
 
 **oLvgui.initoLv**()
 
-`nil oLvgui.initoLv(windowname, width, height, newTheme, flags)`
+`nil = oLvgui.initoLv(windowname, width, height, newTheme, flags)`
 
   * Initialize the framework
 
 **oLvgui.resetVP**()
 
-`nil oLvgui.resetVP(gui_table, width, height, flags)`
+`nil = oLvgui.resetVP(gui_table, width, height, flags)`
 
   * Reset the viewPort
 
 **oLvgui.autoScale**()
 
-`nil oLvgui.autoScale()`
+`nil = oLvgui.autoScale()`
 
   * Set scaling based on the initial width & height, and the device W & H
   * This just sets a flag...
 
 **oLvgui.scaleVP**()
 
-`nil oLvgui.scaleVP(sx, sy)`
+`nil = oLvgui.scaleVP(sx, sy)`
 
   * Explicitly set scaling factors
 
 **oLvgui.setTheme**()
 
-`nil oLvgui.setTheme(gui_table, newTheme)`
+`nil = oLvgui.setTheme(gui_table, newTheme)`
 
   * Set a global theme
 
 **oLvgui.getTheme**()
 
-`theme oLvgui.getTheme()`
+`theme = oLvgui.getTheme()`
 
   * Get the global theme
 
 **oLvgui.getVPort**()
 
-`viewPort oLvgui.getVPort()`
+`viewPort = oLvgui.getVPort()`
 
   * Get the global vPort
 
@@ -457,67 +466,67 @@ The access functions also perform some range tests...
 
 **oLvgui.setActive()**
 
-`nil   oLvgui.setActive(gui_table, state)`
+`nil = oLvgui.setActive(gui_table, state)`
 
   * Change all elements active state (active or inactive)
 
 **oLvgui.setActiveIndex()**
 
-`nil  oLvgui.setActiveIndex(gui_table, index, state)`
+`nil =  oLvgui.setActiveIndex(gui_table, index, state)`
 
   * Set the element #[index] active state (active or inactive)
 
 **oLvgui.setActiveByUser()**
 
-`nil  oLvgui.setActiveByUser(gui_table, user, state)`
+`nil = oLvgui.setActiveByUser(gui_table, user, state)`
 
   * Find element by it's element.user field, set it's active state (active or inactive)
 
 **oLvgui.getElementByUser()**
 
-`element oLvgui.getElementByUser(gui_table, user)`
+`element = oLvgui.getElementByUser(gui_table, user)`
 
   * Get the GUI element with the supplied user field
 
 **oLvgui.getIndexByUser()**
 
-`index oLvgui.getIndexByUser(gui_table, usr)`
+`index = oLvgui.getIndexByUser(gui_table, usr)`
 
   * Get the index # of a specific user field
 
 **oLvgui.deleteElementByUser()**
 
-`nil oLvgui.deleteElementByUser(gui_table, user)`
+`nil = oLvgui.deleteElementByUser(gui_table, user)`
 
   * Delete the element with the user field from the gui_table
 
 **oLvgui.setValue()**
 
-`nil oLvgui.setValue(gui_table, index, value)`
+`nil = oLvgui.setValue(gui_table, index, value)`
 
   * Set the value of element[index] in the gui list
 
 **oLvgui.setValueByUser()**
 
-`nil oLvgui.setValueByUser(gui_table, user, value)`
+`nil = oLvgui.setValueByUser(gui_table, user, value)`
 
   * Find element by it's element.user field, set the value
 
 **oLvgui.setSteps()**
 
-`nil oLvgui.setSteps(element, steps)`
+`nil = oLvgui.setSteps(element, steps)`
 
   * Set the number of steps for Sliders and Knobs
 
 **oLvgui.setLabel**
 
-`nil oLvgui.setLabel(gui_table, index, label)`
+`nil = oLvgui.setLabel(gui_table, index, label)`
 
   * Set the label field of element #[index]
 
 **oLvgui.setLabelByUser**
 
-`nil oLvgui.setLabelByUser(gui_table, user, label)`
+`nil = oLvgui.setLabelByUser(gui_table, user, label)`
 
   * Find element by it's element.user field, set it's label field
 
