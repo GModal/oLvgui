@@ -1,3 +1,6 @@
+-- oLvgui
+-- MIT License
+-- Copyright (c) 2022 Doug Garmon
 do
 -- Leave this 'do' for block
 oLvcolor = {}

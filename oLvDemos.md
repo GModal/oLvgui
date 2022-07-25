@@ -85,7 +85,7 @@ Like a concertina, *tina* is a two-handed performance instrument.
 
 *tina* sends OSC data to a **Pure Data** script, which converts it to MIDI data -> which is routed to the softsynth of your choice.
 
-*tina* has it's own documention...
+[*tina* has it's own documention](demo_love/demo_docs/tinaV1.md)...
 
   * *tina* is the most definitive demonstration of the **panel** element, and it's interactive capabilities
   * As noted, it uses **Pure Data** to convert the OSC data to a MIDI stream (and lessen the OSC network load)

@@ -1,3 +1,6 @@
+-- oLvgui
+-- MIT License
+-- Copyright (c) 2022 Doug Garmon
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- Extras, polygons, colors for oLvgui
 do
