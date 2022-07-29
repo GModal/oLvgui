@@ -10,7 +10,6 @@ oLvgui = {}
 local theme = nil   -- a 'global' theme
 local vPort = nil   -- the viewport (dimensions, etc)
 local vpFlags = {fullscreen=false}
-local AndroidStartFlags = {fullscreen=true}
 local firstTime = true    -- first time through draw callback
 local guiIDcount = 0
 local touchCnt = 0
@@ -27,6 +26,11 @@ local spch = {bs = 0, cr = 0, paste = 0}
 local mouse = {x = 250,y = 100,b = 0,lock = 0}
 local tau = math.pi * 2
 local touch = {}
+
+-- Thx to  BrotSagtMist!
+local oprt=love.graphics.print
+gprint=function(text, x, y, r , sx, sy, ox, oy, kx, ky ) oprt(text, math.floor(x),math.floor(y), r, sx, sy, ox, oy, kx, ky) end
+
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 local defpoly  = {
 0.998584,0.001425,0.305409,0.995922,0.000000,0.995922,0.732785,0.001425,
@@ -189,11 +193,11 @@ function oLvgui.drawoLv(list)
     while love.window.isOpen() == false do
     end
   
-    if vPort.OS == 'Android' then
+    if vPort.OS == 'Android' or vPort.OS == 'iOS' then
       love.window.updateMode( vPort.VPwidth, vPort.VPdepth )
       vPort.useTouch = true
-      love.window.setFullscreen(true)
         while love.window.getFullscreen() == false do
+          love.window.setFullscreen(true)
         end
     else
       love.window.updateMode( vPort.VPwidth, vPort.VPdepth, vpFlags )
@@ -213,12 +217,14 @@ function oLvgui.drawoLv(list)
             vPort.Sy = vPort.safeH / vPort.VPdepth         
             vPort.scaleRequest = false
         end
-      love.graphics.translate(vPort.safeX, vPort.safeY)
       firstTime = false
       vPort.open = true
   end
   love.graphics.setFont(theme.font)
-  love.graphics.scale( vPort.Sx, vPort.Sy )
+  --love.graphics.translate(vPort.safeX, vPort.safeY)
+  if vPort.Sx == 1 and vPort.Sy == 1 then else
+    love.graphics.scale( vPort.Sx, vPort.Sy )
+  end
   
   local dls = {}
 	for _,v in ipairs(list) do
@@ -372,7 +378,7 @@ function drawLabel(v)
         end
         --local tfont = love.graphics.getFont( )
         love.graphics.setFont(v.font)
-        love.graphics.print(v.label, v.x, v.y)
+        gprint(v.label, v.x, v.y)
         love.graphics.setFont(theme.font)
     end
   love.graphics.pop()
@@ -452,7 +458,7 @@ function drawPanel(v)
       love.graphics.push()
       if v.drop == 1 then
         love.graphics.setColor(v.theme.shadowColor)
-        love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 8, 8, 5 )
+        love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 8, 8 )
       end
       love.graphics.setColor(v.color)
       if v.state == 1 then
@@ -465,7 +471,7 @@ function drawPanel(v)
       if v.image ~= nil then
         love.graphics.draw(v.image, v.x, v.y, 0, v.img_sx, v.img_sy)
       else
-        love.graphics.rectangle( "fill", v.x, v.y, v.width, v.depth, 8, 8, 5)
+        love.graphics.rectangle( "fill", v.x, v.y, v.width, v.depth, 8, 8)
       end
       
       if v.showHit then
@@ -584,7 +590,7 @@ function drawButton(v)
 	if v.visible == 1 then 
 		if v.active == 1 then
 			love.graphics.setColor(v.theme.shadowColor)
-			love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 4, 4, 4 )
+			love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 4, 4)
 			love.graphics.setColor(v.theme.color)
       if v.color ~= nil then
         love.graphics.setColor(v.color)
@@ -595,13 +601,13 @@ function drawButton(v)
           love.graphics.setColor(v.colorSel)
         end
       end
-			love.graphics.rectangle( "fill", v.x, v.y, v.width, v.depth, 8, 8, 5)
+			love.graphics.rectangle( "fill", v.x, v.y, v.width, v.depth, 8, 8)
       local eoff = 0
 			if v.etype == 1 then
         eoff = v.depth / 4
 				love.graphics.setColor(v.theme.outline, 0.7)
 				love.graphics.setLineWidth(.5)
-				love.graphics.rectangle( "line", v.x + 8, v.y + v.depth/12, (v.depth * .85), (v.depth * .85), 8, 8, 5)
+				love.graphics.rectangle( "line", v.x + 8, v.y + v.depth/12, (v.depth * .85), (v.depth * .85), 8, 8)
 				love.graphics.setColor(v.theme.hiLtColor)
 				if v.state == 1 then
 					drawPoly(v.x + 8 + v.depth*0.08, v.y+v.depth*0.17, (v.depth * 0.72), (v.depth * 0.67) , v.selGraphic, 'fill')
@@ -611,10 +617,10 @@ function drawButton(v)
       if v.textcolor ~= nil then
         love.graphics.setColor(v.textcolor)
       end
-			love.graphics.print(v.text, v.x + v.textOrig + eoff, v.y + v.depth/2 - v.theme.fontsize/2)
+			gprint(v.text, v.x + v.textOrig + eoff, v.y + v.depth/2 - v.theme.fontsize/2)
 		else
 			love.graphics.setColor(v.theme.shadowColor) -- inactive
-			love.graphics.rectangle( "line", v.x, v.y, v.width, v.depth, 8, 8, 5)
+			love.graphics.rectangle( "line", v.x, v.y, v.width, v.depth, 8, 8)
 		end
 	end
 	love.graphics.pop()
@@ -719,9 +725,9 @@ function drawSHandle(v)
     love.graphics.setColor(v.handlecolor)
   end
 	if v.etype == 'H' then
-		love.graphics.rectangle("fill", clamp(v.x, normscale(v.value, v.min, v.max) * v.width + v.x - v.handlewidth/2, v.x + v.width - v.handlewidth), v.y, v.handlewidth, v.handledepth, 4, 4, 4 )
+		love.graphics.rectangle("fill", clamp(v.x, normscale(v.value, v.min, v.max) * v.width + v.x - v.handlewidth/2, v.x + v.width - v.handlewidth), v.y, v.handlewidth, v.handledepth, 4, 4 )
 	elseif v.etype == 'V' then
-		love.graphics.rectangle("fill", v.x, clamp(v.y, normscale(v.value, v.min, v.max) * v.depth + v.y - v.handledepth/2, v.y + v.depth - v.handledepth), v.handlewidth, v.handledepth, 4, 4, 4 )
+		love.graphics.rectangle("fill", v.x, clamp(v.y, normscale(v.value, v.min, v.max) * v.depth + v.y - v.handledepth/2, v.y + v.depth - v.handledepth), v.handlewidth, v.handledepth, 4, 4 )
 	end
 end
 
@@ -731,14 +737,14 @@ function drawSlider(v)
 		if v.visible == 1 then
 			if v.active == 1 then
 				love.graphics.setColor(v.theme.shadowColor)
-				love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 4, 4, 4 )
+				love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 4, 4)
 				love.graphics.setColor(v.theme.color)
         if v.color ~= nil then
           love.graphics.setColor(v.color)
         end
-				love.graphics.rectangle("fill", v.x, v.y, v.width, v.depth, 4, 4, 4 )
+				love.graphics.rectangle("fill", v.x, v.y, v.width, v.depth, 4, 4)
 				love.graphics.setColor(v.theme.outline)
-				love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4, 4 )
+				love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4)
 				drawSHandle(v)
 				love.graphics.push()
 				
@@ -747,24 +753,24 @@ function drawSlider(v)
             if v.etype == 'V' then
               if v.showValue == true then
                 local vstr = string.format("%.4f", v.value)
-                love.graphics.printf( vstr, theme.font, v.x + v.width/2 - 6, v.y + 20, 16, 'left', 0, 1, .88, 0, 0, 0, 0 )
+                love.graphics.printf( vstr, theme.font, math.floor(v.x + v.width/2 - 6), math.floor(v.y + 20), 16, 'left', 0, 1, .88, 0, 0, 0, 0 )
               end
               
               local leng, cloc = 0, 0
               for _, wd in ipairs(v.labelsplit) do 
                 leng = string.len(wd)
-                love.graphics.printf( wd, theme.font, v.x + v.width + 6, v.y + cloc * 15, 14, 'center', 0, 1, .85, 0, 0, 0, 0 )
+                love.graphics.printf( wd, theme.font, math.floor(v.x + v.width + 6), math.floor(v.y + cloc * 15), 14, 'center', 0, 1, .85, 0, 0, 0, 0 )
                 cloc = cloc + leng + 1.3
               end
               
             elseif v.etype == 'H' then
-              love.graphics.print(string.format("%.5f", v.value), v.x + v.width * .2, v.y +10)
-              love.graphics.print(v.label, v.x + 12, v.y - 20)
+              gprint(string.format("%.5f", v.value), v.x + v.width * .2, v.y +10)
+              gprint(v.label, v.x + 12, v.y - 20)
             end
 				love.graphics.pop()
 			else
 				love.graphics.setColor(v.theme.shadowColor) -- inactive
-				love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4, 4 )
+				love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4)
 			end
 		end
 	love.graphics.pop()
@@ -878,17 +884,17 @@ function drawTxbox(v)
 	if v.visible == 1 then
 		if v.active == 1 then
 			love.graphics.setColor(v.theme.shadowColor)
-			love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 4, 4, 4 )
+			love.graphics.rectangle("fill", v.x+theme.drop.x, v.y+theme.drop.y, v.width, v.depth, 4, 4)
 	
 			if v.working == 1 then
 				love.graphics.setColor(v.theme.cmplColor)
-				love.graphics.rectangle("fill", v.x + 3, v.y +3 , v.width - 6, v.depth -6, 4, 4, 4 )
+				love.graphics.rectangle("fill", v.x + 3, v.y +3 , v.width - 6, v.depth -6, 4, 4)
 			else
 				love.graphics.setColor(v.theme.color)
-				love.graphics.rectangle("fill", v.x, v.y, v.width, v.depth, 4, 4, 4 )
+				love.graphics.rectangle("fill", v.x, v.y, v.width, v.depth, 4, 4)
 			end
 			love.graphics.setColor(v.theme.outline)
-			love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4, 4 )
+			love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4)
 			
 			local fwid = theme.font:getWidth(string.sub(v.text, v.linestart))
 			
@@ -902,15 +908,15 @@ function drawTxbox(v)
 				fwid = theme.font:getWidth(string.sub(v.text, v.linestart))
 			end
 			love.graphics.setColor(v.theme.labelColor)
-			love.graphics.print(string.sub(v.text, v.linestart), v.x + 10, v.y + v.depth/2 - v.ftHt/2)
+			gprint(string.sub(v.text, v.linestart), v.x + 10, v.y + v.depth/2 - v.ftHt/2)
 			
       love.graphics.setColor(v.theme.outline)
-			love.graphics.rectangle("fill", v.x + fwid + 10, v.y, 6 , v.depth, 4, 4, 4 )
+			love.graphics.rectangle("fill", v.x + fwid + 10, v.y, 6 , v.depth, 4, 4)
 			love.graphics.setColor(v.theme.labelColor)
-			love.graphics.print(v.label, v.x + 12, v.y - 20)
+			gprint(v.label, v.x + 12, v.y - 20)
 		else
 			love.graphics.setColor(v.theme.shadowColor) -- inactive
-			love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4, 4 )
+			love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4)
 		end
 	end
 	love.graphics.pop()
@@ -1101,7 +1107,7 @@ function drawDroplist(v)
       if v.focusType ~= 3 then -- ------------------------------  not menu
               
         -- print label above droplist
-        love.graphics.print(v.label, v.x + 12, v.y - 20)
+        gprint(v.label, v.x + 12, v.y - 20)
         love.graphics.setFont(v.dropfont)
 
           for i=1, v.itemsTotal, 1 do
@@ -1109,13 +1115,13 @@ function drawDroplist(v)
             -- print the current selected txt to nascent box, if selection exists
             if i == v.selected then
               love.graphics.setColor(v.theme.dlFontColor)
-              love.graphics.print(string.sub(v.items[i], 1, lleng), v.x + 12, v.y + v.depth / 7)
+              gprint(string.sub(v.items[i], 1, lleng), v.x + 12, v.y + v.depth / 7)
             end
           end
 
           if v.selected == 0 then
             love.graphics.setColor(v.theme.labelColor)
-            love.graphics.print('(none)', v.x + 12, v.y + v.depth / 3 - 5.5 )			
+            gprint('(none)', v.x + 12, v.y + v.depth / 3 - 5.5 )			
           end
       else
             -- ------------------------------------------------  menu
@@ -1124,7 +1130,7 @@ function drawDroplist(v)
             love.graphics.rectangle("line", v.x - 3, v.y - 3, v.width +6 , v.depth + 6, crnr, crnr )
             love.graphics.setColor(v.theme.labelColor)
             love.graphics.setFont(v.dropfont)
-            love.graphics.print(v.label, v.x + 12, v.y + v.depth / 7)
+            gprint(v.label, v.x + 12, v.y + v.depth / 7)
         
       end
 			-- draw active (expanded) droplist
@@ -1156,7 +1162,7 @@ function drawDroplist(v)
 					else
 						love.graphics.setColor(v.theme.dlFontColor)
 					end
-					love.graphics.print(string.sub(v.items[i + v.itemsTop], 1, lleng), v.offsetx + v.x + 10, v.offsety +  v.y + v.depth * (i - 1) + 1)
+					gprint(string.sub(v.items[i + v.itemsTop], 1, lleng), v.offsetx + v.x + 10, v.offsety +  v.y + v.depth * (i - 1) + 1)
 				end
 			end
 		-- not visible, draw the blank unexpanded box
@@ -1322,7 +1328,7 @@ end
 
 function drawKnob(v)
 		love.graphics.push()
-		love.graphics.translate(v.radius/ 2, v.radius/2)
+		love.graphics.translate(math.floor(v.radius/ 2), math.floor(v.radius/2))
 		if v.visible == 1 then
 			if v.active == 1 then
         if v.sync == 1 then
@@ -1332,7 +1338,7 @@ function drawKnob(v)
 				love.graphics.setLineWidth(v.borderWidth)
 				-- label
 				love.graphics.setColor(v.theme.labelColor)
-				love.graphics.print(v.label, v.x  - v.labelLen/2, v.y - v.radius - 22)
+				gprint(v.label, v.x  - v.labelLen/2, v.y - v.radius - 22)
 				-- knob
 				love.graphics.setColor(v.theme.shadowColor)
 				love.graphics.circle( "fill", v.x+theme.drop.x, v.y+theme.drop.y,  v.radius )
@@ -1346,7 +1352,7 @@ function drawKnob(v)
 				love.graphics.circle( "line", v.x, v.y,  v.radius )
         
         love.graphics.setLineWidth(v.radius * .2)
-        love.graphics.arc("line", 'open', v.x, v.y , v.radius * .75, 2.1, 1.04, 10)
+        love.graphics.arc("line", 'open', v.x, v.y , v.radius * .75, 2.1, 1.04)
 				-- pointer
 				love.graphics.setColor(v.theme.labelColor)
         if v.handlecolor ~= nil then
@@ -1361,7 +1367,7 @@ function drawKnob(v)
         love.graphics.setColor(v.theme.labelColor)
 				local tStr = string.format("%.4f", v.value)
 				local nln = theme.font:getWidth(tStr)
-				love.graphics.print(tStr, v.x - nln/2, v.y - v.radius/3)
+				gprint(tStr, v.x - nln/2, v.y - v.radius/3)
 				
 			else  -- draw inactive 
 				love.graphics.setColor(v.theme.shadowColor)

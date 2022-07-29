@@ -19,7 +19,7 @@ Requirements:
 
 # Getting LÖVE
 
-LÖVE V11.3 is available for Ubuntu (20.04) via atp or a front-end like Synaptic. These library modules haven't been tested on LÖVE V11.3 yet.
+LÖVE V11.3 is available for Ubuntu (20.04) via atp or a front-end like Synaptic. These library modules haven't been tested on LÖVE V11.4 yet.
 
 'LÖVE for Android' is available via the Play Store. 
 

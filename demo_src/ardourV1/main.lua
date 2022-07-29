@@ -8,13 +8,14 @@ local oLvcolor = require "oLv/oLvcolor"
 local gui = {}
 -- osc sockets
 local cudp, threadT, chanT, chanNm
-local debugging = 0
+local debugging = 1
 
 -- gonna change these in callbacks...
 local jumpVal = 4
-local rPanel, rLabel, tPortLabel, jumpdl, trackDList, menudl
+local rPanel, rLabel, tPortLabel, jumpdl, trackDList, menudl, rButton, lButton
 local punchIn, punchOut
 local tstate = 0
+local lstate = 0
 
 local tracks = {}
 local ardtemp = {}
@@ -35,6 +36,22 @@ function doButton(state, user)
       end
 		oLvosc.sendOSC(cudp, packet)
     tstate = state
+    rButton.state = state
+    
+    elseif user == 'loop' then
+    local packet
+      if state == 1 then
+        packet = oLvosc.oscPacket('/loop_toggle', 'f', {1})
+        tstate = 1
+        rButton.state = 1
+      else
+        packet = oLvosc.oscPacket('/transport_stop')
+        --packet = oLvosc.oscPacket('/loop_toggle', 'f', {1})
+        tstate = 0
+        rButton.state = 0
+      end
+		oLvosc.sendOSC(cudp, packet)
+    lstate = state
  
     elseif user == 'start' then
     packet = oLvosc.oscPacket('/goto_start')
@@ -190,6 +207,25 @@ function myServ(chan, slst)
             else
               menudl.items[2] = '» Punch Out'
             end
+          elseif oscADDR == '/loop_toggle' then  -- 'Master Section' Feedback setting required...
+            if dataT[1] == 0 then
+              lstate = 0
+              lButton.state = 0
+              tstate = 0
+              rButton.state = 0
+            else
+              lstate = 1
+              lButton.state = 1
+            end
+            
+            elseif oscADDR == '/transport_play' then  -- 'Master Section' Feedback setting required...
+            if dataT[1] == 1 then
+              tstate = 1
+              rButton.state = 1
+            else
+--              lstate = 0
+--              lButton.state = 0
+            end
           elseif oscADDR == '#reply' then
             if dataT[1] == 'AT' or dataT[1] == 'MT' then    -- audio or midi tracks
               local trkItem = {name = dataT[2], ssid = dataT[7]}
@@ -252,9 +288,9 @@ function love.load()
   -- droplist : Ardour tracks
 	trackDList = oLvgui.createDroplist(gui, 'Ardour Track Select', {}, {}, 300, 520, 230, 28, 'tracks')  
   
-  local bButton = oLvgui.createButton(gui, "Roll Transport", {'TOGGLEOFF'}, 200, 170, 550, 190, 'roll')
-  bButton.selGraphic = oLvext.chunkyX
-  bButton.color = {0.57293, 0.21025, 0.25402} 
+  rButton = oLvgui.createButton(gui, "Roll Transport", {'TOGGLEOFF'}, 200, 170, 550, 190, 'roll')
+  rButton.selGraphic = oLvext.chunkyX
+  rButton.color = {0.57293, 0.21025, 0.25402} 
   
   oLvgui.createButton(gui, "Undo", {'MOMENTARY'}, 30, 480, 70, 40, 'undo')
 	oLvgui.createButton(gui, "Redo", {'MOMENTARY'}, 30, 530, 70, 40, 'redo') 
@@ -266,6 +302,9 @@ function love.load()
 	oLvgui.createButton(gui, "< Marker", {'MOMENTARY'}, 200, 380, 90, 50, 'prevMark')  
 	oLvgui.createButton(gui, "Marker >", {'MOMENTARY'}, 660, 380, 90, 50, 'nextMark')
 	oLvgui.createButton(gui, "Jump >", {'MOMENTARY'}, 500, 380, 90, 50, 'jmpFwd')
+  
+  lButton = oLvgui.createButton(gui, "Loop", {'TOGGLEOFF'}, 780, 380, 150, 70, 'loop')
+  lButton.selGraphic = oLvext.xMark
   
   -- droplist : Jump amt
 	jumpdl = oLvgui.createDroplist(gui, 'Jump Amt', {'1', '2', '3', '4', '6', '8', '12', '24'},{'NO_DESELECT'}, 810, 540, 40, 25, 'jump')
