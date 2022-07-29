@@ -8,7 +8,7 @@ local oLvcolor = require "oLv/oLvcolor"
 local gui = {}
 -- osc sockets
 local cudp, threadT, chanT, chanNm
-local debugging = 1
+local debugging = 0
 
 -- gonna change these in callbacks...
 local jumpVal = 4
@@ -310,7 +310,7 @@ function love.load()
 	jumpdl = oLvgui.createDroplist(gui, 'Jump Amt', {'1', '2', '3', '4', '6', '8', '12', '24'},{'NO_DESELECT'}, 810, 540, 40, 25, 'jump')
   oLvgui.dlSetSelect(jumpdl, 4)
   
-  menudl = oLvgui.createDroplist(gui, 'Settings', {'Punch In', 'Punch Out', '\t\t- - -', 'Show Bar/Beat', '\t\t- - -', 'Quit'},{'MENU'}, 750, 40, 180, 25, 'menu')
+  menudl = oLvgui.createDroplist(gui, 'Settings', {'Punch In', 'Punch Out', '\t\t- - -', 'Show Bar/Beat', '\t\t- - -', 'Quit'},{'MENU'}, 750, 40, 180, 28, 'menu')
   
   tPortLabel = oLvgui.createLabel(gui, "001|01|0000", {}, 320, 60, 32)  
   tPortLabel.active = 0
