@@ -113,8 +113,8 @@ Returns a **Gui Element**
 {options} = 
 
 * MOMENTARY : immediate mode, callback on buttonDown (default)
-* TOGGLEON : Toggle value, initially ON, uses polygon image
-* TOGGLEOFF : Toggle value, initially OFF, uses polygon image
+* TOGGLE_ON : Toggle value, initially ON, uses polygon image
+* TOGGLE_OFF : Toggle value, initially OFF, uses polygon image
 
 ## Droplist
 **oLvgui.createDroplist(gui_table, label, {items}, {options}, x, y, width, height, user (, callback))**
@@ -165,7 +165,10 @@ Returns a **Gui Element**
 * TYPE_NORM : a normal rectangular panel (default)
 * TYPE_INTERACT : an interactive panel, functions as a special type of button
 * TYPE_IMAGE : a panel with an attached image
-* SHOWHIT : displays an x/y touch-mark for an interactive panel
+* SHOWHIT_ON : displays an x/y touch-mark for an interactive panel
+* SHOWHIT_OFF : turn off touch-mark
+* FOLLOW_ON : Mouse/touch movements generate callbacks
+* FOLLOW_OFF : No callbacks for movement alone
 
 Panels are a swiss-army knife of functions. They act as visual elements, can display pictures, work as interactive buttons and even return the x,y coords of a hit.
 
@@ -178,10 +181,10 @@ Returns a **Gui Element**
 
 * HORIZ : Slider is horizontal (default)
 * VERT : Slider is vertical
-* SHOWV : show label text vertically (default for VERT)
-* NOSHOWV : show label text horizontially
-* RETURN : Slider snaps back to initial value when touch moves outside
-* NORETURN : no snap back (default)
+* SHOWV_ON : show label text vertically (default for VERT)
+* SHOWV_OFF : show label text horizontially
+* RETURN_ON : Slider snaps back to initial value when touch moves outside
+* RETURN_OFF : no snap back (default)
 
 ## Txbox
 **oLvgui.createTxbox(gui_table, label, {options}, x, y, width, height, presetTx, user (, callback))**
@@ -192,12 +195,13 @@ Returns a **Gui Element**
 
 ## Standard Callbacks
 
-* doButton(state, user)
-* doDroplist(index, item_text, user)
-* doKnob(value, user)
-* doPanel(state, user, x, y)
-* doSlider(value, user)
-* doTxbox(text, user)
+  * doButton(state, user)
+  * doDroplist(index, item_text, user)
+  * doKnob(value, user)
+  * doPanel(state, user, x, y)
+     * x and y are normalized to a range of 0 - 1
+  * doSlider(value, user)
+  * doTxbox(text, user)
 
 ## Other:
 * oLvquit()
@@ -212,17 +216,17 @@ See **Add a close callback** section below.
     local oLvcolor = require "oLv/oLvcolor"
     local oLvext = require "oLv/oLvext"
 
-* "oLvgui.lua" contains the GUI definitions
-* "oLvcolor"   contains the color and theme defs, etc.
-* "oLvext"   (extras) contains polygon defs for buttons, etc.
+ * "oLvgui.lua" contains the GUI definitions
+ * "oLvcolor"   contains the color and theme defs, etc.
+ * "oLvext"   (extras) contains polygon defs for buttons, etc.
 
 ## Load the OSC modules
 
     local oLvosc = require "oLv/oLvosc"
     local oLvoscT = require "oLv/oLvoscT"
 
-* "oLvosc"   contains the standard OSC library, client & server
-* "oLvoscT"  contains the threaded OSC server
+ * "oLvosc"   contains the standard OSC library, client & server
+ * "oLvoscT"  contains the threaded OSC server
 
 The standard path for the modules is in the **/oLv** directory within the project dir.
 
@@ -295,7 +299,7 @@ Minimally, this should also work:
         -- Init the GUI elements here --
     end
 
-## oLv and GUI scaling
+## oLv, GUI scaling and flipping
 
 **All** the GUI elements in *oLvgui* are scaled, but the default scaling is 1:1. The autoScale() function (for mobile devices) simply creates scale factors to fit the defined elements into the mobile viewport.
 
@@ -317,6 +321,14 @@ The scaling factors can be manually edited by:
 But the viewPort won't be created until **oLvgui.initoLv()** has been called.
 
 Also, the scaling factors don't effect the window, just the elements. So on a desktop the defined window size won't change, just the controls.
+
+**Vertical Flipping**
+
+The UI can be flipped vertically (upside-down) with a call to **oLvgui.flipVertUI()**. This is helpful if a device is physically mounted and viewed from a specific angle. For example, a control surface mounted on a guitar pickguard and viewed upside-down.
+
+Calling **oLvgui.unflipVertUI()** will return the UI to a normal orientation.
+
+Flipping the viewport has a complication: when a text entry box (Txbox) is selected the Android scrn keyboard will be upside down...
 
 ## Add GUI elements, controls
 
@@ -397,6 +409,12 @@ Place these two callbacks in the standard LÖVE callbacks (see section [Updating
 
 ## GUI Settings Functions
 
+**oLvgui.createTheme**()
+
+`theme = oLvgui.createTheme(fontsize)`
+
+  * Create a basic theme (fontsize is optional)
+
 **oLvgui.initoLv**()
 
 `nil = oLvgui.initoLv(windowname, width, height, newTheme, flags)`
@@ -421,6 +439,20 @@ Place these two callbacks in the standard LÖVE callbacks (see section [Updating
 `nil = oLvgui.scaleVP(sx, sy)`
 
   * Explicitly set scaling factors
+
+**oLvgui.flipVertUI**()
+
+`nil = oLvgui.flipVertUI()`
+
+  * flip the vertical orientation (sets flag)
+  * UI will be upside down
+
+**oLvgui.unflipVertUI**()
+
+`nil = oLvgui.unflipVertUI()`
+
+  * returns to 'normal' orientation, i.e. reverse a previous flip
+  * restores standard input offsets
 
 **oLvgui.setTheme**()
 
@@ -522,35 +554,119 @@ The access functions also perform some range tests...
 
   * Set the number of steps for Sliders and Knobs
 
-**oLvgui.setLabel**
+**oLvgui.setLabel()**
 
 `nil = oLvgui.setLabel(gui_table, index, label)`
 
   * Set the label field of element #[index]
 
-**oLvgui.setLabelByUser**
+**oLvgui.setLabelByUser()**
 
 `nil = oLvgui.setLabelByUser(gui_table, user, label)`
 
   * Find element by it's element.user field, set it's label field
 
+## Panel Functions
+
+**oLvgui.setPanel()**
+
+`nil = oLvgui.setPanel(elem, x, y)`
+
+  * Set the current x,y values for a panel
+    * Range for x & y is 0-1
+  * The panel's state can only be set by a physical input device (mouse, touch)
+    * setPanel() does generate a callbacks, with state = 0
+
+**oLvgui.getPanel()**
+
+`panel_state, x, y = oLvgui.getPanel(elem)`
+
+  * Gets the current state, x, y values for a panel
+
 ## DropList Functions
 
-**oLvgui.dlSetItems**(element, items)
+*Normal* DropList selections are exclusive and singular, and handled by the element.
+
+**oLvgui.dlSetItems**()
+
+`nil = oLvgui.dlSetItems(element, items)`
 
   * Set the droplist items list to a new list
 
-**oLvgui.dlSetSelect**(element, item)
+**oLvgui.dlSetSelect**()
+
+`nil = oLvgui.dlSetSelect(element, item)`
 
   * Select an item in the items list
 
+*Menu* Droplist selections can be multiple items. The user must manage Menus directly (see *ardourV1* example).
+
+**oLvgui.dlMenuSelect**()
+
+`nil = oLvgui.dlMenuSelect(elem, item)`
+
+  * Select an item as a *Menu* item
+
+**oLvgui.dlMenuUnSelect**()
+
+  * Unselect an item as a *Menu* item
+
+`nil = oLvgui.dlMenuUnSelect(elem, item)`
+
+**oLvgui.dlMenuIsSelected**()
+
+`bool = oLvgui.dlMenuIsSelected(elem, item)`
+
+  * returns true if *Menu* item# is selected, false otherwise
+
 ## Marker Functions
 
-**oLvgui.delAfterMarker**(gui_table, user)
+**oLvgui.delAfterMarker**()
+
+`nil = oLvgui.delAfterMarker(gui_table, user)`
 
   * Delete all elements *after* the marker with matching user field
 
-**oLvgui.delToMarker**(gui_table, user)
+**oLvgui.delToMarker**()
+
+`nil = oLvgui.delToMarker(gui_table, user)`
 
   * Delete all elements *before* the marker with matching user field
 
+## Color functions (in oLvcolor)
+
+### Theme Color
+
+`theme = oLvcolor.buildColors(color_quad, theme)`
+
+  * Populates a theme with extended colors based on the input "color quad" of color values (4 colors)
+
+### Color Mixing
+
+Most of these are simple color mixing & adjustments. A color_table (RGB_table) is a table of three color values. For example 
+
+```
+    -- The color white:
+    local White = { 1.0, 1.0, 1.0 } )
+```
+The functions:
+
+`R, G, B = oLvcolor.hsl2rgb(h, s, l)`
+
+`H, S, L =  oLvcolor.rgb2hsl(r, g, b)`
+
+`distance_value = oLvcolor.rgbColorDist(color1, color2)`
+
+`Luma_value = oLvcolor.luma(color_table)`
+
+`RGB_table = oLvcolor.brightness(color_table, brighness_amt)`
+
+`RGB_table = oLvcolor.cmix(color_table1, color_table2)`
+
+`RGB_table = oLvcolor.complementRGB(color_table, brighness_adj_amt)`
+
+## Color 'Quads' in oLvcolor
+
+The oLvcolor.lua file has several 'premixed' color quads that can be useful for themes. Pass the quad to oLvcolor.buildColors(). 
+
+Or make your own..

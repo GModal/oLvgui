@@ -19,7 +19,7 @@ local knobIncr
 local knobRow
 local lastWidg = ''
 
-function updateGuiVari()
+local function updateGuiVari()
 	knobIncr = knobSize + knobSize /4
 	knobRow = knobSize + knobSize /4
 end
@@ -28,25 +28,25 @@ local lines = {}
 local lineAtoms = {}
 local patchNames = {}
 -- load a file into lines
-function loadFile(fname)
-local line
+local function loadFile(fname)
+	local line
 	for line in love.filesystem.lines(fname) do 
-	  table.insert(lines, line)
+		table.insert(lines, line)
 	end
 end
 
 -- break lines into individual elements
-function atomsFamily()
-local lineatoms = {}
+local function atomsFamily()
+	local lineatoms = {}
 	for i,v in ipairs(lines) do
-	local aline = {}
+		local aline = {}
 		for word in v:gmatch("%w+") do 
-		table.insert(aline, word)
+			table.insert(aline, word)
 		end
 		table.insert(patchNames, aline[1])
 		table.insert(lineatoms, aline)
 	end
-return(lineatoms)
+	return(lineatoms)
 end
 -- +++++++++++++++++++++++++++++++++++++++++++++++++++
 -- 					GUI callbacks
@@ -86,13 +86,13 @@ end
 function doDroplist(index, text, user)
 	if user == 'patcher' then
 
-  local msgT = {'@closepatch'}
-  local packet = oLvosc.oscPacket('/P2Jcli/0/cmd', 's', msgT)
-  oLvosc.sendOSC(cudp, packet)
+		local msgT = {'@closepatch'}
+		local packet = oLvosc.oscPacket('/P2Jcli/0/cmd', 's', msgT)
+		oLvosc.sendOSC(cudp, packet)
 
-  msgT = {'@openpatch', patches[index]}
-  packet = oLvosc.oscPacket('/P2Jcli/0/cmd', 'ss', msgT)
-  oLvosc.sendOSC(cudp, packet)
+		msgT = {'@openpatch', patches[index]}
+		packet = oLvosc.oscPacket('/P2Jcli/0/cmd', 'ss', msgT)
+		oLvosc.sendOSC(cudp, packet)
 
 	elseif user == 'preset' then
 		print(index, text)
@@ -108,42 +108,42 @@ function doQuitNow(state, user)
 end
 -- +++++++++++++++++++++++++++++++++++++++++++++++++++
 -- poll the OSC server 
-function myServ(serv, slst)
+local function myServ(serv, slst)
 	local packet = oLvosc.oscPoll(serv)
 	if packet then
-  local oscADDR, oscTYPE, oscDATA = oLvosc.oscUnpack(packet)
-  local dataT = oLvosc.oscDataUnpack(oscTYPE, oscDATA)
-  
-  local oscCMD = oLvosc.oscAddrCmd(oscADDR)
-  -- print(oscADDR, oscCMD, oscTYPE)
-  
-  local addrSplit = oLvosc.oscAddrSplit(oscADDR)
+		local oscADDR, oscTYPE, oscDATA = oLvosc.oscUnpack(packet)
+		local dataT = oLvosc.oscDataUnpack(oscTYPE, oscDATA)
+
+		local oscCMD = oLvosc.oscAddrCmd(oscADDR)
+		-- print(oscADDR, oscCMD, oscTYPE)
+
+		local addrSplit = oLvosc.oscAddrSplit(oscADDR)
 --  if addrSplit ~= nil then
 --    for i, v in ipairs(addrSplit) do
 --       print('Atom: '..i..' '..v)
 --    end
 --    print ('# of atoms: '..#addrSplit)
 --  end
-  if #addrSplit >= 3 then
-    local addrID = tonumber(addrSplit[#addrSplit - 1])
+		if #addrSplit >= 3 then
+			local addrID = tonumber(addrSplit[#addrSplit - 1])
 --      if type(addrID) == 'number' then
 --        print('ID: '..addrID)
 --      end
-    end
+		end
 
 --  if dataT ~= nil then
 --    for i, v in ipairs(dataT) do
 --      print(i..')', v)
 --    end
 --  end
-		
+
 		-- using the "cmd" part of the address that's extracted from the packet
 		if oscCMD == 'pp' then
 			oLvgui.setValueByUser(slst, dataT[1], dataT[2])
 		elseif oscCMD == 'labl' then
 			oLvgui.setLabelByUser(slst, dataT[1], dataT[2])
-      
-		-- add a widget to gui
+
+			-- add a widget to gui
 		elseif oscCMD == 'newWidget' then
 			if dataT[3] == 'slider' then
 				if lastWidg == 'kn' then
@@ -165,19 +165,19 @@ function myServ(serv, slst)
 				oLvgui.createKnob(gui, dataT[2] , {}, guiorigX, guiorigY, knobSize, dataT[4] , dataT[5] , dataT[6] , dataT[1] )
 				guiorigX = guiorigX + knobIncr
 				lastWidg = 'kn'
-        -- print('Knob: '..knobSize..' Incr: '..knobIncr)
+				-- print('Knob: '..knobSize..' Incr: '..knobIncr)
 			end
-		-- delete all widgets AFTER the marker (after the std group), prepare for new ones
+			-- delete all widgets AFTER the marker (after the std group), prepare for new ones
 		elseif oscCMD == 'clrWidgets' then
 			-- delete widgets after the std group
 			gui = oLvgui.delAfterMarker(gui, 'Mk1')
 			guiorigY = 200
 			guiorigX = 50
 			nudge = 20
-      knobSize = 80
+			knobSize = 80
 			updateGuiVari()
 			lastWidg = ''
-		-- resize knobs
+			-- resize knobs
 		elseif oscCMD == 'knobSz' then
 			if guiorigX ~= 50 then
 				guiorigY = guiorigY + knobIncr
@@ -185,10 +185,10 @@ function myServ(serv, slst)
 			end
 			knobSize = dataT[1]
 			updateGuiVari()
-		-- nudge row right (knobs)
+			-- nudge row right (knobs)
 		elseif oscCMD == 'nudge' then
-				nudge = 20 * dataT[1]
-				guiorigX = guiorigX + nudge
+			nudge = 20 * dataT[1]
+			guiorigX = guiorigX + nudge
 		end
 	end
 end
@@ -196,9 +196,9 @@ end
 -- a group of "standard" widgets for pd2jack (mute, DSP, quit, etc)
 function stdWidgets()
 	oLvgui.createButton(gui, "Bye!", {'MOMENTARY'}, 480, 50, 60, 50, 9999, doQuitNow)
-	local aButton = oLvgui.createButton(gui, "DSP", {'TOGGLEON'}, 50, 50, 80, 60, 'dsp')
-  aButton.selGraphic = oLvext.checkMark
-	local bButton = oLvgui.createButton(gui, "Bypass", {'TOGGLEOFF'}, 140, 50, 110, 60, 'bypass')
+	local aButton = oLvgui.createButton(gui, "DSP", {'TOGGLE_ON'}, 50, 50, 80, 60, 'dsp')
+	aButton.selGraphic = oLvext.checkMark
+	local bButton = oLvgui.createButton(gui, "Bypass", {'TOGGLE_OFF'}, 140, 50, 110, 60, 'bypass')
 	bButton.selGraphic = oLvext.xMark	
 
 	-- droplist items
@@ -215,24 +215,24 @@ local canvW = 601
 local canvH = 906
 
 function love.load()
-  local myTheme = oLvgui.createTheme()
-  myTheme = oLvcolor.buildColors(oLvcolor.colorT.standard, myTheme)
-  oLvgui.initoLv("Patches", canvW, canvH, myTheme)
-	
+	local myTheme = oLvgui.createTheme()
+	myTheme = oLvcolor.buildColors(oLvcolor.colorT.standard, myTheme)
+	oLvgui.initoLv("Patches", canvW, canvH, myTheme)
+
 	loadFile("gtx_banks_2.txt")
 	lineAtoms = atomsFamily()
 
-  	-- setup OSC send (client)
-  -- sample options: '127.0.0.1', 'localhost', or the local machine addr
-  -- and the multicast addr, something like: '224.0.0.1'
+	-- setup OSC send (client)
+	-- sample options: '127.0.0.1', 'localhost', or the local machine addr
+	-- and the multicast addr, something like: '224.0.0.1'
 	cudp = oLvosc.cliSetup('224.0.0.1', 20331)
-  
+
 	-- setup OSC receive (server)
-  -- sample options: '127.0.0.1', 'localhost','*', '0.0.0.0', or the local machine addr
-  -- and the multicast addr, something like: '224.0.0.1'
-  -- '0.0.0.0' works well for mobile devices (server only), listens to all the senders on network
+	-- sample options: '127.0.0.1', 'localhost','*', '0.0.0.0', or the local machine addr
+	-- and the multicast addr, something like: '224.0.0.1'
+	-- '0.0.0.0' works well for mobile devices (server only), listens to all the senders on network
 	sudp = oLvosc.servSetup('0.0.0.0', 20341)
-  
+
 	stdWidgets()
 end
 

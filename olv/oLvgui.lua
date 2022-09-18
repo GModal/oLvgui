@@ -51,11 +51,9 @@ end
 
 function oLvgui.createTheme()
 	local lvTheme = {}
-  
 	lvTheme.drop = {x = 7, y = 6}		-- dropshadow x,y
   lvTheme.font = love.graphics.newFont(16)
 	lvTheme.fontsize = 16
-  
   lvTheme.cquad = { { 0.5, 0.5, 0.5 }, { 0.7, 0.7, 0.7 }, { 0.4, 0.4, 0.4 }, { 0.95, 0.95, 0.95 }}
   -- world fundimentals, class 1: set by a quad, and used as the basis to derive other colors
 	lvTheme.canvas = { 0.5, 0.5, 0.5 }
@@ -69,7 +67,6 @@ function oLvgui.createTheme()
 	lvTheme.hiLtColor = { 0.67, 0.67, 0.67 }     -- a complementary color, different from cmplColor
   -- other fonts
 	lvTheme.dlFontColor = { 0.3, 0.3, 0.3 }   -- font color for dl selection
-  
 return lvTheme
 end
 
@@ -80,20 +77,21 @@ function oLvgui.createVPort(wname, vpX, vpY, flags)
   vp.OS = love.system.getOS()
   vp.flags = flags
   vp.winname = wname
-  
 	vp.VPwidth = 1    -- vp size AS SET, I.E., as used on the desktop
 	vp.VPdepth = 2    --    This WILL be RESET on mobile devices
-  
   vp.safeX = 0      -- ACTUAL ANDROID vp size AS RETURNED by getSafeArea()
   vp.safeY = 0
   vp.safeW = 0
   vp.safeH = 0
+  vp.trsMTx = 0
+  vp.trsMTy = 0
   vp.Sx = 1         -- screen scalers
   vp.Sy = 1
   vp.open = false
   vp.scaleRequest = false
   vp.orientate = 'unknown'
   vp.useTouch = false
+  vp.flip = false
   vp.syncNow = 0
 
   if flags == nil then
@@ -151,6 +149,21 @@ function oLvgui.scaleVP(sx, sy)
   end
 end
 
+function oLvgui.transUI(trsX, trsY)
+  vPort.trsMTx = vPort.trsMTx + trsX
+  vPort.trsMTy = vPort.trsMTy + trsY
+end
+
+function oLvgui.flipVertUI()
+  vPort.flip = true
+end
+
+function oLvgui.unflipVertUI()
+  vPort.flip = false
+  vPort.trsMTx = 0
+  vPort.trsMTy = 0
+end
+
 function oLvgui.setTheme(list, newTheme)
   for _,v in ipairs(list) do
       v.theme = newTheme
@@ -188,10 +201,8 @@ function oLvgui.updateoLv(list, dtime)
 end
 
 function oLvgui.drawoLv(list)
-
   if firstTime then
-    while love.window.isOpen() == false do
-    end
+    while love.window.isOpen() == false do end
   
     if vPort.OS == 'Android' or vPort.OS == 'iOS' then
       love.window.updateMode( vPort.VPwidth, vPort.VPdepth )
@@ -202,7 +213,6 @@ function oLvgui.drawoLv(list)
     else
       love.window.updateMode( vPort.VPwidth, vPort.VPdepth, vpFlags )
     end
-    
       vPort.orientate = love.window.getDisplayOrientation()
       vPort.safeX, vPort.safeY, vPort.safeW, vPort.safeH = love.window.getSafeArea()
       
@@ -212,7 +222,6 @@ function oLvgui.drawoLv(list)
               vPort.safeW = vPort.safeH
               vPort.safeH = tmpW
             end
-
             vPort.Sx = vPort.safeW / vPort.VPwidth
             vPort.Sy = vPort.safeH / vPort.VPdepth         
             vPort.scaleRequest = false
@@ -220,10 +229,17 @@ function oLvgui.drawoLv(list)
       firstTime = false
       vPort.open = true
   end
+  
   love.graphics.setFont(theme.font)
-  --love.graphics.translate(vPort.safeX, vPort.safeY)
   if vPort.Sx == 1 and vPort.Sy == 1 then else
     love.graphics.scale( vPort.Sx, vPort.Sy )
+  end
+  --love.graphics.translate(vPort.safeX, vPort.safeY)
+  if vPort.flip then
+    vPort.trsMTx = vPort.safeW/vPort.Sx
+    vPort.trsMTy = vPort.safeH/vPort.Sy
+    love.graphics.translate(vPort.safeW/vPort.Sx, vPort.safeH/vPort.Sy)
+    love.graphics.rotate(-math.pi)
   end
   
   local dls = {}
@@ -357,15 +373,13 @@ function oLvgui.createLabel(list, label, options, x, y, fontSize, color, user)
   if color ~= nil then
     lvLabel.color = color
   end
-  
   if fontSize ~= nil then
     lvLabel.font = love.graphics.newFont(fontSize)
   end
   
   lvLabel.guiID = incrIDs()
 	
-	-- Put the new slider in the list
-    	table.insert(list, lvLabel)
+  table.insert(list, lvLabel)
 	return(lvLabel)
 end
 
@@ -387,14 +401,16 @@ end
 function updateLabel(v, dt)
 end
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function oLvgui.createPanel(list, label, options, x, y, width, depth, color, user)
+function oLvgui.createPanel(list, label, options, x, y, width, depth, color, user, fskip)
 	local lvPanel = {}
 	lvPanel.kind = 'pa'
   lvPanel.guiID = -1
   lvPanel.touchID = -1
   lvPanel.showHit = false
+  lvPanel.followMv = false
 	lvPanel.active = 1
 	lvPanel.visible = 1
+  lvPanel.sync = 0
 	lvPanel.etype = 0
   lvPanel.state = 0
   lvPanel.fntSize = fntSize
@@ -405,6 +421,10 @@ function oLvgui.createPanel(list, label, options, x, y, width, depth, color, use
 	lvPanel.depth = depth
   lvPanel.tx = -1
   lvPanel.ty = -1
+  lvPanel.lasttx = -1
+  lvPanel.lastty = -1
+  lvPanel.fSkip = 1
+  lvPanel.skipCnt = 0
 	lvPanel.user = user
 	lvPanel.theme = theme
 	lvPanel.color = color
@@ -420,6 +440,11 @@ function oLvgui.createPanel(list, label, options, x, y, width, depth, color, use
   lvPanel.img_width = 0
   lvPanel.img_height = 0
   
+  if fskip ~= nil then
+    if fskip > 0 then
+      lvPanel.fSkip = fskip
+    end
+  end
 			-- iterate options
 	for i,_ in ipairs(options) do
 		if options[i] == 'DROPS_ON' then          -- DropShadow on
@@ -428,8 +453,14 @@ function oLvgui.createPanel(list, label, options, x, y, width, depth, color, use
       lvPanel.drop = 0
     elseif options[i] == 'TYPE_INTERACT' then   -- interactive
       lvPanel.etype = 1
-    elseif options[i] == 'SHOWHIT' then   -- draw xy dot
+    elseif options[i] == 'SHOWHIT_ON' then   -- draw xy dot
       lvPanel.showHit = true
+    elseif options[i] == 'SHOWHIT_OFF' then   -- draw xy dot
+      lvPanel.showHit = false
+    elseif options[i] == 'FOLLOW_ON' then   -- movement generates callback
+      lvPanel.followMv = true
+    elseif options[i] == 'FOLLOW_OFF' then   -- movement alone NO callback
+      lvPanel.followMv = false
     elseif options[i] == 'TYPE_NORM' then   -- no interactive
       lvPanel.etype = 0
     elseif options[i] == 'TYPE_IMAGE' then   -- no interactive
@@ -475,12 +506,19 @@ function drawPanel(v)
       end
       
       if v.showHit then
-        if v.state == 1 and v.tx ~= -1 and v.ty ~= -1 then
-          love.graphics.setColor({.4,.4,.4})
-          love.graphics.circle( 'line', v.tx -6, v.ty -6, 12 )
+        if v.tx ~= -1 and v.ty ~= -1 then
+          if v.state == 1 then
+            love.graphics.setLineWidth(2)
+            love.graphics.setColor(v.theme.cmplColor)
+            love.graphics.circle( 'line', v.tx, v.ty, 18 )
+            love.graphics.line(v.tx, v.y, v.tx, v.depth+v.y)
+            love.graphics.line(v.x, v.ty, v.width+v.x, v.ty)
+          elseif v.lasttx ~= -1 then
+            love.graphics.setColor(v.theme.outline)
+            love.graphics.circle( 'fill', v.lasttx, v.lastty, 5 )
+          end
         end
       end
-        
       love.graphics.pop()
     end
 end
@@ -488,6 +526,11 @@ end
 function updatePanel(v, dt)
 	if v.visible == 1 and v.active == 1 and v.etype == 1 then
 		if blockAll == 0 then		-- blockAll freezes all elements if a droplist is open
+      if v.sync == 1 then
+          v.callback(1, v.user, (v.lasttx - v.x) / v.width, (v.lastty - v.y) / v.depth)
+          v.callback(0, v.user, (v.lasttx - v.x) / v.width, (v.lastty - v.y) / v.depth)
+          v.sync = 0
+        end
       
       if vPort.useTouch == true then    -- use touch
               local tx, ty, tid = tchHit(v.x, v.y, v.width, v.depth)
@@ -498,6 +541,17 @@ function updatePanel(v, dt)
                   if v.state == 0 then
                     v.state = 1
                     v.callback(v.state, v.user, (tx - v.x) / v.width, (ty - v.y) / v.depth)
+                    v.lasttx = tx
+                    v.lastty = ty
+                  elseif v.followMv then
+                    if v.lasttx ~= tx or v.lastty ~= ty then
+                      v.skipCnt = v.skipCnt + 1
+                      if v.skipCnt % v.fSkip == 0 then
+                        v.callback(v.state, v.user, (tx - v.x) / v.width, (ty - v.y) / v.depth)
+                      end
+                      v.lasttx = tx
+                      v.lastty = ty
+                    end
                   end
               elseif v.state == 1 then -- touch outside 
                     v.state = 0
@@ -509,9 +563,22 @@ function updatePanel(v, dt)
               v.ty = ty
               if test == true then  -- a hit, mouse
                     if mouse.b >= 1 then   -- mouse b>1
+                      
                           if v.state == 0 then
                             v.state = 1
                             v.callback(v.state, v.user, (tx - v.x) / v.width, (ty - v.y) / v.depth)
+                            v.lasttx = tx
+                            v.lastty = ty
+                          elseif v.followMv then
+                            
+                            if v.lasttx ~= tx or v.lastty ~= ty then
+                              v.skipCnt = v.skipCnt + 1
+                              if v.skipCnt % v.fSkip == 0 then
+                                v.callback(v.state, v.user, (tx - v.x) / v.width, (ty - v.y) / v.depth)
+                              end
+                              v.lasttx = tx
+                              v.lastty = ty
+                            end
                           end
                     elseif v.state == 1 then  -- deselected while inside (up button)
                             v.state = 0
@@ -522,7 +589,6 @@ function updatePanel(v, dt)
                       v.state = 0
                       v.callback(v.state, v.user, (tx - v.x) / v.width, (ty - v.y) / v.depth) 
               end
-  
       end
     end
   end
@@ -579,8 +645,7 @@ function oLvgui.createButton(list, text, options, x, y, width, depth, user, call
 	end
   
   lvButton.guiID = incrIDs()
-	-- Put the new button in the list
-    	table.insert(list, lvButton)
+  table.insert(list, lvButton)
 	return(lvButton)
 end
 
@@ -639,7 +704,6 @@ function updateButton(v)
           if mouse.b == 0  then  -- deselected while inside (up button)
             IDlock = -1
           end
-    
           if IDlock == v.guiID then
               if mouse.b == 2 then
                 if v.etype == 1 then
@@ -714,7 +778,6 @@ function oLvgui.createSlider(list, label, options, x, y, width, depth, value, mi
 	end
   
   lvSlider.guiID = incrIDs()
-	-- Put the new slider in the list
 	table.insert(list, lvSlider)
 	return(lvSlider)
 end
@@ -747,7 +810,6 @@ function drawSlider(v)
 				love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, 4, 4)
 				drawSHandle(v)
 				love.graphics.push()
-				
         love.graphics.setColor(v.theme.labelColor)
         
             if v.etype == 'V' then
@@ -755,7 +817,6 @@ function drawSlider(v)
                 local vstr = string.format("%.4f", v.value)
                 love.graphics.printf( vstr, theme.font, math.floor(v.x + v.width/2 - 6), math.floor(v.y + 20), 16, 'left', 0, 1, .88, 0, 0, 0, 0 )
               end
-              
               local leng, cloc = 0, 0
               for _, wd in ipairs(v.labelsplit) do 
                 leng = string.len(wd)
@@ -778,7 +839,6 @@ end
 
 function updateSlider(v)
     if v.visible == 1 and v.active == 1 and blockAll == 0 then
-      
         if vPort.useTouch == true then    -- use touch
             local tx, ty, tid = tchHit(v.x - 2, v.y - 2, v.width + 4, v.depth + 4)
             
@@ -788,16 +848,13 @@ function updateSlider(v)
                   elseif v.etype == 'V' then
                     v.value = clamp(v.min, revscale((ty - v.y)/v.depth, v.min, v.max), v.max)
                   end
-                  
                   if v.steps > 1 then
                     v.value = findSteps(v)
                   end
-                  
                   if v.value ~= v.lastv then
                     v.callback(v.value, v.user)
                     v.lastv = v.value
                   end
-                  
               elseif v.autoRet == true then
                   if v.value ~= v.defValue then
                     v.value = v.defValue
@@ -807,7 +864,6 @@ function updateSlider(v)
               
         else  -- use mouse
             local test,_,_ = bxHit(v.x - 2, v.y - 2, v.width + 4, v.depth + 4)
-
               if test == true then
                     if mouse.b >= 1 and IDlock == -1 then
                         IDlock = v.guiID
@@ -815,23 +871,20 @@ function updateSlider(v)
               elseif mouse.b == 0 then  -- deselect by moving out of obj & mouse UP
                       IDlock = -1
               end
-            
+    
               if  IDlock == v.guiID then
                     if v.etype == 'H' then
                       v.value = clamp(v.min, revscale((mouse.x - v.x)/v.width, v.min, v.max), v.max)
                     elseif v.etype == 'V' then
                       v.value = clamp(v.min, revscale((mouse.y - v.y)/v.depth, v.min, v.max), v.max)
                     end
-                    
                     if v.steps > 1 then
                       v.value = findSteps(v)
                     end
-                    
                     if v.value ~= v.lastv then
                       v.callback(v.value, v.user)
                       v.lastv = v.value
                     end
-                    
               elseif v.autoRet == true then
                     if v.value ~= v.defValue then
                       v.value = v.defValue
@@ -873,7 +926,6 @@ function oLvgui.createTxbox(list, label, options, x, y, width, depth, text, user
 	end
   
   lvTxbox.guiID = incrIDs()
-	-- Put the new text box in the list
 	table.insert(list, lvTxbox)
 	return(lvTxbox)
 end
@@ -978,7 +1030,6 @@ function doDLsync(v)
 	local lowPoint = v.y + dlDepthTotal
   -- shift up (neg offset) this amt
   local botOffset = vPort.VPdepth - lowPoint - 8
-  
   -- set offset (shift up) to keep bottom of droplist in VP
   if lowPoint > vPort.VPdepth then
 		v.offsety = botOffset
@@ -1053,7 +1104,6 @@ function oLvgui.createDroplist(list, label, items, options, x, y, width, depth, 
   
   doDLsync(lvDroplist)
   lvDroplist.guiID = incrIDs()
-	-- Put the new droplist in the list
 	table.insert(list, lvDroplist)
 	return(lvDroplist)
 end
@@ -1080,7 +1130,6 @@ function drawDroplist(v)
           doDLsync(v)
           v.sync = 0
         end
-        
       crnr = 5
       if v.focusType == 3 then
         crnr = 0
@@ -1100,10 +1149,8 @@ function drawDroplist(v)
       -- outline
       love.graphics.setColor(v.theme.outline)
       love.graphics.rectangle("line", v.x, v.y, v.width, v.depth, crnr, crnr, 4 )
-			
 			love.graphics.setFont(v.theme.font)
 			love.graphics.setColor(v.theme.labelColor)
-      
       if v.focusType ~= 3 then -- ------------------------------  not menu
               
         -- print label above droplist
@@ -1118,7 +1165,6 @@ function drawDroplist(v)
               gprint(string.sub(v.items[i], 1, lleng), v.x + 12, v.y + v.depth / 7)
             end
           end
-
           if v.selected == 0 then
             love.graphics.setColor(v.theme.labelColor)
             gprint('(none)', v.x + 12, v.y + v.depth / 3 - 5.5 )			
@@ -1178,18 +1224,18 @@ end
 function updateDroplist(v)
 	if v.visible == 1 and v.active == 1  then
     local test
-              if mouse.b > 1 then		
-                      if blockAll == 0 then   -- a special flag set by droplist, due to overlap
-                        test,_,_ = bxHit(v.x, v.y, v.width, v.depth)
-                        if test == true then
+        if mouse.b > 1 then		
+                if blockAll == 0 then   -- a special flag set by droplist, due to overlap
+                  test,_,_ = bxHit(v.x, v.y, v.width, v.depth)
+                  if test == true then
 
-                          if IDlock == -1 then
-                            IDlock = v.guiID
-                            blockAll = 1
-                          end
-                        end        
-                      end
-              end
+                    if IDlock == -1 then
+                      IDlock = v.guiID
+                      blockAll = 1
+                    end
+                  end        
+                end
+        end
 			
       local oflag = 0     -- 'open' flag
       local spinArea = 0  -- extra space @ bottom for spinnin list up/down
@@ -1198,61 +1244,60 @@ function updateDroplist(v)
       end
       
       if mouse.b == 1 then
-                if IDlock == v.guiID then
-                  if mouse.y > v.y + v.offsety and mouse.y < v.depth * v.itemsShow + v.y + v.offsety + spinArea and mouse.x > v.x + v.offsetx and mouse.x < v.x + v.offsetx + v.width then
-                  
-                    if mouse.y > v.depth * v.itemsShow + v.y + v.offsety and mouse.x > v.x + v.offsetx + v.width / 2 then
-                        -- do the downward spin (move long list down)
-                      local newTop = v.itemsTop + 3
-                      oflag = 1
-                      if newTop < v.itemsTotal + 1 - v.itemsShow then
-                        v.itemsTop = newTop
-                      else
-                        local newTop = v.itemsTop + 1
-                        if newTop < v.itemsTotal + 1 - v.itemsShow then
-                        v.itemsTop = newTop
-                        end
-                      end
-                      
-                    elseif mouse.y > v.depth * v.itemsShow + v.y + v.offsety and mouse.x < v.x + v.offsetx + v.width / 2 then
-                      -- do the spin up
-                      local newTop = v.itemsTop - 3
-                      oflag = 1
-                      if newTop < 0 then
-                        newTop = v.itemsTop - 1
-                      end
-                      if newTop >= 0 then
-                        v.itemsTop = newTop
-                      end
-                    else
-                      -- not spin, do Selection / deselection
-                      local subv =  ((mouse.y - v.y - v.offsety) /v.depth) + 1
-                      local subSlot = math.floor(subv)
-                      
-                      if v.selected == subSlot + v.itemsTop and v.selected > 0 then
-                        if v.focusType == 0 then
-                          v.selected = 0
-                          v.callback(v.selected, '(none)', v.user)
-                        elseif v.focusType == 2 or v.focusType == 3 then  -- resend
-                          v.callback(v.selected, v.items[v.selected], v.user)
-                        end
-                      elseif subSlot > 0 and subSlot <= v.itemsTotal then
-                        v.selected = subSlot  + v.itemsTop
-                        v.callback(v.selected, v.items[v.selected], v.user)
-                      end
-                      -- cludge to prevent underlying elements from receiving a mouse hit on exit
-                      love.timer.sleep(0.3)
-                    end
-                  end
-                  if oflag == 0 then
-                      -- close the droplist
-                      IDlock = -1
-                      blockAll = 0
-                      mouse.b = 0
+          if IDlock == v.guiID then
+            if mouse.y > v.y + v.offsety and mouse.y < v.depth * v.itemsShow + v.y + v.offsety + spinArea and mouse.x > v.x + v.offsetx and mouse.x < v.x + v.offsetx + v.width then
+            
+              if mouse.y > v.depth * v.itemsShow + v.y + v.offsety and mouse.x > v.x + v.offsetx + v.width / 2 then
+                  -- do the downward spin (move long list down)
+                local newTop = v.itemsTop + 3
+                oflag = 1
+                if newTop < v.itemsTotal + 1 - v.itemsShow then
+                  v.itemsTop = newTop
+                else
+                  local newTop = v.itemsTop + 1
+                  if newTop < v.itemsTotal + 1 - v.itemsShow then
+                  v.itemsTop = newTop
                   end
                 end
+                
+              elseif mouse.y > v.depth * v.itemsShow + v.y + v.offsety and mouse.x < v.x + v.offsetx + v.width / 2 then
+                -- do the spin up
+                local newTop = v.itemsTop - 3
+                oflag = 1
+                if newTop < 0 then
+                  newTop = v.itemsTop - 1
+                end
+                if newTop >= 0 then
+                  v.itemsTop = newTop
+                end
+              else
+                -- not spin, do Selection / deselection
+                local subv =  ((mouse.y - v.y - v.offsety) /v.depth) + 1
+                local subSlot = math.floor(subv)
+                
+                if v.selected == subSlot + v.itemsTop and v.selected > 0 then
+                  if v.focusType == 0 then
+                    v.selected = 0
+                    v.callback(v.selected, '(none)', v.user)
+                  elseif v.focusType == 2 or v.focusType == 3 then  -- resend
+                    v.callback(v.selected, v.items[v.selected], v.user)
+                  end
+                elseif subSlot > 0 and subSlot <= v.itemsTotal then
+                  v.selected = subSlot  + v.itemsTop
+                  v.callback(v.selected, v.items[v.selected], v.user)
+                end
+                -- cludge to prevent underlying elements from receiving a mouse hit on exit
+                love.timer.sleep(0.3)
+              end
+            end
+            if oflag == 0 then
+                -- close the droplist
+                IDlock = -1
+                blockAll = 0
+                mouse.b = 0
+            end
+          end
       end    
-
 	end
 end
 -- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1309,10 +1354,8 @@ function oLvgui.createKnob(list, label, options, x, y, size, value, min, max, us
 	if callbk ~= nil then
 		lvKnob.callback = callbk
 	end
-	
 	lvKnob.angle = valToAngle(revValue(value, min, max))
 	lvKnob.labelLen = theme.font:getWidth(label)
-	
 	-- iterate options
 	for i,_ in ipairs(options) do
 		if options[i] == 'HORIZ' then
@@ -1321,7 +1364,6 @@ function oLvgui.createKnob(list, label, options, x, y, size, value, min, max, us
 	end
 
   lvKnob.guiID = incrIDs()
-	-- Put the new slider in the list
 	table.insert(list, lvKnob)
 	return(lvKnob)
 end
@@ -1347,10 +1389,8 @@ function drawKnob(v)
           love.graphics.setColor(v.color)
         end
 				love.graphics.circle( "fill", v.x, v.y,  v.radius )
-				
 				love.graphics.setColor(v.theme.outline)
 				love.graphics.circle( "line", v.x, v.y,  v.radius )
-        
         love.graphics.setLineWidth(v.radius * .2)
         love.graphics.arc("line", 'open', v.x, v.y , v.radius * .75, 2.1, 1.04)
 				-- pointer
@@ -1474,6 +1514,25 @@ function oLvgui.setValueByUser(gList, user, value)
 	end
 end
 
+function oLvgui.setPanel(elem, x, y)
+  if elem ~= nil then
+    if elem.kind == 'pa' then
+      elem.tx, elem.ty = clamp(0, x, 1) * elem.width + elem.x, clamp(0, y, 1) * elem.depth + elem.y
+      elem.lasttx, elem.lastty = elem.tx, elem.ty
+      elem.sync = 1
+      return
+    end
+  end
+end
+
+function oLvgui.getPanel(elem)
+  if elem ~= nil then
+    if elem.kind == 'pa' then
+      return elem.state, (elem.lasttx - elem.x) / elem.width, (elem.lastty - elem.y) / elem.depth
+    end
+  end
+end
+
 function oLvgui.setSteps(elem, steps)
   if elem ~= nil then
     if steps > 1 then
@@ -1569,33 +1628,34 @@ function incrMButton()
 	end
 end
 
+function tIn(px, py)
+  return math.abs(px / vPort.Sx - vPort.trsMTx), math.abs(py / vPort.Sy - vPort.trsMTy)
+end
+
 function love.mousepressed(x, y, button, istouch)
 		mouse.b = 1
-		mouse.x = x  / vPort.Sx
-		mouse.y = y  / vPort.Sy
+		mouse.x, mouse.y = tIn(x, y)
 end
 
 function love.mousereleased(x, y, button)
 		mouse.b = 0
-		mouse.x = x / vPort.Sx
-		mouse.y = y / vPort.Sy
+		mouse.x, mouse.y = tIn(x, y)
 end
 
 function love.mousemoved( x, y, dx, dy, istouch )
 	if mouse.b >= 1 then
-		mouse.x = x / vPort.Sx
-		mouse.y = y / vPort.Sy
+		mouse.x, mouse.y = tIn(x, y)
     mouse.b = mouse.b + 1
 	end
 end
 
 function love.touchpressed(id, x, y)
-  touch[id] = {x / vPort.Sx, y / vPort.Sy, tid = getID()}
+  local t1, t2 = tIn(x, y)
+  touch[id] = {t1, t2, tid = getID()}
 end
 
 function love.touchmoved(id, x, y)
-  touch[id][1] = x / vPort.Sx
-  touch[id][2] = y / vPort.Sy
+  touch[id][1], touch[id][2] = tIn(x, y)
 end
 
 function love.touchreleased(id, x, y)

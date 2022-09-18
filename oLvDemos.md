@@ -48,6 +48,18 @@ The 'Query' button should be pressed after starting (assuming Ardour is running)
 
 *A very minimal demo, maybe the most basic.*
 
+## mkGui
+
+### mkGui is an on-the-fly, alterable GUI for pd2jack
+
+  * When a new FX patch is loaded, it instructs *oLvgui* to build a custom GUI for it
+  * Requires [pd2jack](https://github.com/GModal/pd2jack) (a headless version of **Pure Data** , built on *libpd*)
+  * Needs it's own documention, which hasn't been done yet...
+  * ...but the [video demo](https://youtu.be/nw84JxDqqa0) shows how it works
+
+**mkGui**, in many ways, was the reason *oLvgui* was made. It's a way to create interactive interfaces
+on mobile devices for audio effects.
+
 ## oscCaster
 
 ### Sends OSC test data to address, port (OSC)
@@ -66,6 +78,12 @@ The 'Query' button should be pressed after starting (assuming Ardour is running)
   * Deselecting closes the port
 
 Uses 'oLvoscT', the threaded OSC server (LÖVE only) which is much more reliable for receiving OSC data packets.
+
+### panelXY
+
+An OSC control surface that demonstrates a panel XY (2D control) element. Also showcases flipping the UI vertically.
+
+  * Sends OSC data to Carla plugin host
 
 ## themesV1
 

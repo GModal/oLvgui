@@ -159,7 +159,7 @@ canvH = 960
 
 -- Std Love callbacks
 function love.load()
-  local myTheme = oLvgui.createTheme()
+  local myTheme = oLvgui.createTheme(18)
   myTheme = oLvcolor.buildColors(oLvcolor.colorT.standard, myTheme)
 	oLvgui.initoLv("oLv Demo", canvW, canvH, myTheme)
   oLvgui.autoScale()
@@ -184,7 +184,7 @@ function love.load()
   xLabel = oLvgui.createLabel(gui, canvW, {}, 50, 330, 20, {0.9,0.9,0.9})
   yLabel = oLvgui.createLabel(gui, canvH, {}, 250, 330, 20, {0.9,0.9,0.9})
   
-  local f1Button = oLvgui.createButton(gui, "FullScrn", {'TOGGLEOFF'}, 100, 360, 110, 35, 'flag1')
+  local f1Button = oLvgui.createButton(gui, "FullScrn", {'TOGGLE_OFF'}, 100, 360, 110, 35, 'flag1')
 	-- set the selection graphic to a different polygon
 	f1Button.selGraphic = oLvext.xMark
 
@@ -203,15 +203,15 @@ function love.load()
 	aButton.callback = oLvquit
   aButton.color = oLvcolor.color.olvRed
 	
-	local bButton = oLvgui.createButton(gui, "DSP", {'TOGGLEON'}, 30, 500, 80, 60, 'dsp')
+	local bButton = oLvgui.createButton(gui, "DSP", {'TOGGLE_ON'}, 30, 500, 80, 60, 'dsp')
   bButton.selGraphic = oLvext.checkMark
 	
-	local cButton = oLvgui.createButton(gui, "Bypass", {'TOGGLEOFF'}, 120, 500, 110, 60, 'bypass')
+	local cButton = oLvgui.createButton(gui, "Bypass", {'TOGGLE_OFF'}, 120, 500, 110, 60, 'bypass')
 	-- set the selection graphic to a different polygon
 	cButton.selGraphic = oLvext.xMark
 
 	-- here user field is table of sliders, the callback is to change state of those sliders
-	local dButton = oLvgui.createButton(gui, "Activate +/-", {'TOGGLEON'}, 240, 500, 180, 60, 505, doStateAll, 505)
+	local dButton = oLvgui.createButton(gui, "Activate +/-", {'TOGGLE_ON'}, 240, 500, 180, 60, 505, doStateAll, 505)
 	-- set the selection graphic to a different polygon
 	dButton.selGraphic = oLvext.talkBubble
 	
@@ -227,15 +227,15 @@ function love.load()
 	oLvgui.createTxbox(gui, 'Text2', {}, 155, 650, 390, 25, '', 39)
 	
 	-- droplist
-	oLvgui.createDroplist(gui, 'Choose one', patchNames, {}, 150, 710, 210, 26, 'dropOne')
+	oLvgui.createDroplist(gui, 'Choose one', patchNames, {}, 150, 710, 280, 42, 'dropOne')
 	
 	-- droplist items
 	local dlst2 = {'Phaser', 'Reverb'}
 	-- droplist 2
 	oLvgui.createDroplist(gui, 'Choose Pd Patch', dlst2, {}, 350, 50, 150, 24, 'patcher')
 	
-	 oLvgui.createKnob(gui, 'Knob', {}, 175, 770, 100, .5, -1, 4, 6)
-	 local aknob = oLvgui.createKnob(gui, 'Knob Too', {}, 350, 730, 150, .6, 0, 1, 7)
+	 oLvgui.createKnob(gui, 'Knob', {}, 175, 790, 100, .5, -1, 4, 6)
+	 local aknob = oLvgui.createKnob(gui, 'Knob Too', {}, 400, 780, 150, .6, 0, 1, 7)
 	 oLvgui.setSteps(aknob, 6)
 	
 end

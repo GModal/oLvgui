@@ -11,89 +11,90 @@ local thisColor = {0.5, 0.5, 0.5}
 local tblname = 'cname'
 local droplst
 local dlTheme
+local themeFontSz = 18
 
 local scrnPalette = { {0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, {0.5, 0.5, 0.5}, }
 -- 		GUI callbacks
 function doButton(state, user)
-  if user == 'print' then
-    local cform = string.format("%.5f, %.5f, %.5f", thisColor[1],thisColor[2],thisColor[3])
-    cform = 'cname = {'..cform..'},'
-    print(cform)
-    strLabel.label = cform
-  elseif user == 'printall' then
-    local cform, ctmp
-    cform = tblname..' = {'
-    for i = 1, 4 do
-      ctmp = string.format("%.5f, %.5f, %.5f", scrnPalette[i][1], scrnPalette[i][2], scrnPalette[i][3])
-      cform = cform..' {'..ctmp..'},'
-    end
-    cform = cform..' },'
-    print(cform)
-    strLabel.label = cform
-    love.system.setClipboardText(cform)
-  elseif user == 'setpal' then
-    local myTheme = oLvgui.createTheme()
-    myTheme = oLvcolor.buildColors(scrnPalette, myTheme)
-    oLvgui.setTheme(gui, myTheme)
-  elseif user == 'topal' then
-    local atheme = oLvgui.getTheme()
-    if atheme ~= nil then
-      for i = 1, 4 do
-        scrnPalette[i][1] = atheme.cquad[i][1]
-        scrnPalette[i][2] = atheme.cquad[i][2]
-        scrnPalette[i][3] = atheme.cquad[i][3]
-      end
-    end
-  elseif user >= 1 and user <= 4 then
-    scrnPalette[user][1] = thisColor[1]
-    scrnPalette[user][2] = thisColor[2]
-    scrnPalette[user][3] = thisColor[3]
-  elseif user >= 11 and user <= 14 then
-    local idex = user - 10
-    thisColor[1] = scrnPalette[idex][1]
-    thisColor[2] = scrnPalette[idex][2]
-    thisColor[3] = scrnPalette[idex][3]
-    oLvgui.setValueByUser(gui, 'r', scrnPalette[idex][1])
-    oLvgui.setValueByUser(gui, 'g', scrnPalette[idex][2])
-    oLvgui.setValueByUser(gui, 'b', scrnPalette[idex][3])
-  end
+	if user == 'print' then
+		local cform = string.format("%.5f, %.5f, %.5f", thisColor[1],thisColor[2],thisColor[3])
+		cform = 'cname = {'..cform..'},'
+		print(cform)
+		strLabel.label = cform
+	elseif user == 'printall' then
+		local cform, ctmp
+		cform = tblname..' = {'
+		for i = 1, 4 do
+			ctmp = string.format("%.5f, %.5f, %.5f", scrnPalette[i][1], scrnPalette[i][2], scrnPalette[i][3])
+			cform = cform..' {'..ctmp..'},'
+		end
+		cform = cform..' },'
+		print(cform)
+		strLabel.label = cform
+		love.system.setClipboardText(cform)
+	elseif user == 'setpal' then
+		local myTheme = oLvgui.createTheme(themeFontSz)
+		myTheme = oLvcolor.buildColors(scrnPalette, myTheme)
+		oLvgui.setTheme(gui, myTheme)
+	elseif user == 'topal' then
+		local atheme = oLvgui.getTheme()
+		if atheme ~= nil then
+			for i = 1, 4 do
+				scrnPalette[i][1] = atheme.cquad[i][1]
+				scrnPalette[i][2] = atheme.cquad[i][2]
+				scrnPalette[i][3] = atheme.cquad[i][3]
+			end
+		end
+	elseif user >= 1 and user <= 4 then
+		scrnPalette[user][1] = thisColor[1]
+		scrnPalette[user][2] = thisColor[2]
+		scrnPalette[user][3] = thisColor[3]
+	elseif user >= 11 and user <= 14 then
+		local idex = user - 10
+		thisColor[1] = scrnPalette[idex][1]
+		thisColor[2] = scrnPalette[idex][2]
+		thisColor[3] = scrnPalette[idex][3]
+		oLvgui.setValueByUser(gui, 'r', scrnPalette[idex][1])
+		oLvgui.setValueByUser(gui, 'g', scrnPalette[idex][2])
+		oLvgui.setValueByUser(gui, 'b', scrnPalette[idex][3])
+	end
 end
 
 -- std Droplist callback
 function doDroplist(index, text, user)
-  if user == 'presets' then
-    local newTheme = oLvgui.createTheme()
-    newTheme = oLvcolor.buildColors(themes[index], newTheme)
-    oLvgui.setTheme(gui, newTheme)
-    --droplst.theme = dlTheme -- reset dl theme after setTheme() for gui list
-  end
+	if user == 'presets' then
+		local newTheme = oLvgui.createTheme(themeFontSz)
+		newTheme = oLvcolor.buildColors(themes[index], newTheme)
+		oLvgui.setTheme(gui, newTheme)
+		--droplst.theme = dlTheme -- reset dl theme after setTheme() for gui list
+	end
 end
 
 -- std Txbox callback
 function doTxbox(text, user)
-  if user == 'name' then
-    tblname = text
-  end
+	if user == 'name' then
+		tblname = text
+	end
 end
 
 function doPanel(state, user)
-  print('a hit: '..user..' state: '..state)
+	print('a hit: '..user..' state: '..state)
 end
 
 function doSlider(value, user)
 end
 
 function doKnob(value, user)
-  if user == 'r' then
-    thisColor[1] = value
-    cPanel.color = thisColor
-  elseif user == 'g' then
-    thisColor[2] = value
-    cPanel.color = thisColor
-  elseif user == 'b' then
-    thisColor[3] = value
-    cPanel.color = thisColor
-  end
+	if user == 'r' then
+		thisColor[1] = value
+		cPanel.color = thisColor
+	elseif user == 'g' then
+		thisColor[2] = value
+		cPanel.color = thisColor
+	elseif user == 'b' then
+		thisColor[3] = value
+		cPanel.color = thisColor
+	end
 end
 
 -- Quit when button pressed
@@ -108,47 +109,64 @@ canvH = 600
 
 -- Std Love callbacks
 function love.load()
-  dlTheme = oLvgui.createTheme()
-  dlTheme = oLvcolor.buildColors(oLvcolor.colorT.standard, dlTheme)
-  oLvgui.initoLv("Theme Editor", canvW, canvH, dlTheme)
-  oLvgui.autoScale()
-  
-  local b1 = oLvgui.createButton(gui, "X", {'MOMENTARY'}, 20, 24, 28, 28, 9999, oLvquit)
-  b1.color = oLvcolor.color.olvRed
-  b1.textcolor = oLvcolor.color.olvYellow
-  local b2 = oLvgui.createButton(gui, "Print Color", {'MOMENTARY'}, 120, 20, 100, 28, 'print')
-  local b3 = oLvgui.createButton(gui, "Print Palette Tbl", {'MOMENTARY'}, 240, 20, 160, 28, 'printall')
-  strLabel = oLvgui.createLabel(gui, "Color Defs Copied to Clipbd", {}, 50, 70, 11) 
+	dlTheme = oLvgui.createTheme(themeFontSz)
+	dlTheme = oLvcolor.buildColors(oLvcolor.colorT.standard, dlTheme)
+	oLvgui.initoLv("Theme Editor", canvW, canvH, dlTheme)
+	oLvgui.autoScale()
 
-  cPanel = oLvgui.createPanel(gui, "", {}, 60, 100, 680, 180, thisColor)  
-  oLvgui.createKnob(gui, 'Red', {}, 115, 170, 130, thisColor[1], 0, 1, 'r')
+	local b1 = oLvgui.createButton(gui, "X", {'MOMENTARY'}, 20, 24, 28, 28, 9999, oLvquit)
+	b1.color = oLvcolor.color.olvRed
+	b1.textcolor = oLvcolor.color.olvYellow
+	local b2 = oLvgui.createButton(gui, "Print Color", {'MOMENTARY'}, 120, 20, 100, 28, 'print')
+	local b3 = oLvgui.createButton(gui, "Print Palette Tbl", {'MOMENTARY'}, 240, 20, 160, 28, 'printall')
+	strLabel = oLvgui.createLabel(gui, "Color Defs Copied to Clipbd", {}, 50, 70, 11) 
+
+	cPanel = oLvgui.createPanel(gui, "", {}, 60, 100, 680, 180, thisColor)  
+	oLvgui.createKnob(gui, 'Red', {}, 115, 170, 130, thisColor[1], 0, 1, 'r')
 	oLvgui.createKnob(gui, 'Green', {}, 340, 170, 130, thisColor[2], 0, 1, 'g')
-  oLvgui.createKnob(gui, 'Blue', {}, 580, 170, 130, thisColor[3], 0, 1, 'b')
-  
-  local slid = oLvgui.createSlider(gui, 'Slider test', {}, 50, 490, 150, 30, 1, 1, 6, 777)
-  oLvgui.createTxbox(gui, 'Palette Tbl Name', {}, 700, 30, 210, 25, 'cname', 'name')
-  
-  oLvgui.createButton(gui, "Pull", {'MOMENTARY'}, 290, 375, 30, 20, 1)
-  oLvgui.createButton(gui, "\\/", {'MOMENTARY'}, 410, 375, 30, 20, 2)
-  oLvgui.createButton(gui, "\\/", {'MOMENTARY'}, 530, 375, 30, 20, 3)
-  oLvgui.createButton(gui, "\\/", {'MOMENTARY'}, 650, 375, 30, 20, 4)
-  
-  oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 290, 400, 114, 100, scrnPalette[1])
-  oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 410, 400, 114, 100, scrnPalette[2])
-  oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 530, 400, 114, 100, scrnPalette[3])
-  oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 650, 400, 114, 100, scrnPalette[4])
-  
-  oLvgui.createButton(gui, "Set", {'MOMENTARY'}, 290 + 70, 505, 30, 20, 11)
-  oLvgui.createButton(gui, "/\\", {'MOMENTARY'}, 410 + 70, 505, 30, 20, 12)
-  oLvgui.createButton(gui, "/\\", {'MOMENTARY'}, 530 + 70, 505, 30, 20, 13)
-  oLvgui.createButton(gui, "/\\", {'MOMENTARY'}, 650 + 70, 505, 30, 20, 14)
-  
-  droplst = oLvgui.createDroplist(gui, 'Presets', themenms, {'RESEND_SEL'},  50, 350, 180, 30, 'presets')
-  oLvgui.dlSetSelect(droplst, 1)
-  droplst.theme = dlTheme
-  
-  oLvgui.createButton(gui, "Preset -> Palette", {'MOMENTARY'}, 50, 400, 180, 28, 'topal')
-  oLvgui.createButton(gui, "Palette -> Theme", {'MOMENTARY'}, 410, 320, 180, 28, 'setpal')
+	oLvgui.createKnob(gui, 'Blue', {}, 580, 170, 130, thisColor[3], 0, 1, 'b')
+
+	local slid = oLvgui.createSlider(gui, 'Slider test', {}, 50, 490, 150, 30, 1, 1, 6, 777)
+	oLvgui.createTxbox(gui, 'Palette Tbl Name', {}, 700, 30, 210, 25, 'cname', 'name')
+
+	oLvgui.createButton(gui, "Pull", {'MOMENTARY'}, 290, 375, 40, 20, 1)
+	oLvgui.createButton(gui, "\\/", {'MOMENTARY'}, 410, 375, 30, 20, 2)
+	oLvgui.createButton(gui, "\\/", {'MOMENTARY'}, 530, 375, 30, 20, 3)
+	oLvgui.createButton(gui, "\\/", {'MOMENTARY'}, 650, 375, 30, 20, 4)
+
+	oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 290, 400, 114, 100, scrnPalette[1])
+	oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 410, 400, 114, 100, scrnPalette[2])
+	oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 530, 400, 114, 100, scrnPalette[3])
+	oLvgui.createPanel(gui, "", {'DROPS_OFF'}, 650, 400, 114, 100, scrnPalette[4])
+
+	oLvgui.createButton(gui, "Push", {'MOMENTARY'}, 290 + 65, 505, 50, 20, 11)
+	oLvgui.createButton(gui, "/\\", {'MOMENTARY'}, 410 + 70, 505, 30, 20, 12)
+	oLvgui.createButton(gui, "/\\", {'MOMENTARY'}, 530 + 70, 505, 30, 20, 13)
+	oLvgui.createButton(gui, "/\\", {'MOMENTARY'}, 650 + 70, 505, 30, 20, 14)
+
+	droplst = oLvgui.createDroplist(gui, 'Presets', themenms, {'RESEND_SEL'},  50, 350, 180, 30, 'presets')
+	oLvgui.dlSetSelect(droplst, 1)
+	droplst.theme = dlTheme
+
+	oLvgui.createButton(gui, "Theme -> Palette", {'MOMENTARY'}, 50, 400, 180, 28, 'topal')
+	oLvgui.createButton(gui, "Palette -> Theme", {'MOMENTARY'}, 410, 320, 180, 28, 'setpal')
+	
+	oLvgui.createLabel(gui, "Theme -> Palette", {}, 770, 100, 16)
+	oLvgui.createLabel(gui, "Copies current theme colors", {}, 770, 120, 11)
+	oLvgui.createLabel(gui, "to the four color boxes", {}, 770, 135, 11)
+	
+	oLvgui.createLabel(gui, "Palette -> Theme", {}, 770, 170, 16)
+	oLvgui.createLabel(gui, "Copies palette colors to", {}, 770, 190, 11)
+	oLvgui.createLabel(gui, "a new theme", {}, 770, 205, 11)
+	
+	oLvgui.createLabel(gui, "Pull (\\/)", {}, 770, 260, 16)
+	oLvgui.createLabel(gui, "Sets pallet box from mix box", {}, 770, 280, 11)
+	
+	oLvgui.createLabel(gui, "Push (/\\)", {}, 770, 310, 16)
+	oLvgui.createLabel(gui, "Sets mix box from pallet", {}, 770, 330, 11)
+	
+	oLvgui.createLabel(gui, "Mix Box", {}, 380, 105, 12)
+	oLvgui.createLabel(gui, "Palette", {}, 500, 440, 12)
 end
 
 function love.update(dt)
@@ -158,4 +176,3 @@ end
 function love.draw()
 	oLvgui.drawoLv(gui)
 end
-  
