@@ -1,0 +1,50 @@
+
+
+0.1.2 fixes:
+
+- text rendering (done)  
+
+- fix typo in tinaV1.md:
+
+"LÖVE V11.3 is available for Ubuntu (20.04) via atp or a front-end like Synaptic. These library modules haven't been tested on LÖVE V11.3 yet."
+
+- added mkGui demo
+
+-----------------
+
+0.1.2a
+
+- fix debugging = 1 on ardourV1
+
+- added video link to oLv README.md
+
+0.1.2c 
+
+oLvgui
+- added 'follow movement' to oLvgui.panel, which generates callbacks with XY coord. This converts a panel to a 2-D element.
+	+ Options: FOLLOW_ON, FOLLOW_OFF added
+	+ Options: SHOWHIT_OFF added, SHOWHIT_ON modified (was SHOWHIT)
+	+ getPanel() & setPanel() functions
+	
+- added vertical screen flipping -- flipVertUI(), unflipVertUI() & transUI()
+
+- oLvgui.createTheme() now has a font size creation argument as an option
+	For instance: oLvgui.createTheme(20)
+	
+- added color functions docs to README.md
+-----------------------------------------------
+
+0.1.3
+- Reworked some of the the mouse/touch code
+	+ Now buttons, sliders and panels can work simultaneously/concurrently in a touch panel (mobile) context
+
+- Reworked 'menus': char codes are now hidden and selections are color values
+	+ Menus are still NOT handled by the GUI, but are the responsibility of the programmer. However, some support functions added:
+		+ oLvgui.dlMenuSelect(elem, item)
+		  oLvgui.dlMenuUnSelect(elem, item)
+		  oLvgui.dlMenuIsSelected(elem, item) (returns true if item# is selected, false otherwise)
+	
+- Options: Button ops changed TOGGLEON, TOGGLEOFF to TOGGLE_ON, TOGGLE_OFF to match later format
+	+ Also changed RETURN, NORETURN to RETURN_ON, RETURN_OFF for sliders, and SHOWV, NOSHOWV to SHOWV_ON, SHOWV_OFF
+
+- Fixed label sizes and locations for several elements
